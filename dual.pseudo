@@ -1,0 +1,149 @@
+# Pseudocode summary of:
+#https://github.com/emilk/Dual-Contouring/blob/master/src/vol/Contouring.hpp
+
+def plane:
+	float dist; # distance to nearest point on isosurface, negative if inside
+	vec3 normal; # normal away from isosurface
+
+def voxel:
+	int index = -1; # vertex index in mesh
+
+def field:
+	array3d<plane>
+
+static corners[] = 
+[
+	# x = right, y = up, z = forward
+	# if using another coordinate system, reorder corners here?
+	(0,0,0), (0,0,1), (0,1,0), (0,1,1),
+	(1,0,0), (1,0,1), (1,1,0), (1,1,1)
+];
+
+static edges[] = 
+[
+	... # order of edge intersection tests
+];
+
+static axes[] = 
+[
+	(1,0,0),
+	(0,1,0),
+	(0,0,1)
+];
+
+def construct_vertices(field, mesh, voxels):
+
+	planes = [];
+	A = []; # normals
+	b = []; # surface distance
+
+	for vox, p in voxels:
+
+		# p = 3D array coordinate
+
+		bool inside[8]; # bitfield for voxel corners inside/outside surface
+		int numInside;
+
+		for ci inside range(8):
+			inside[ci] = (field[p + corners[ci]].dist <= 0) # inside surface if negative distance
+			if inside[ci]:
+				numInside++;
+
+		if numInside == 0 or numInside == 8:
+			return; # no vertex; fully uniform voxel
+
+		vox = voxels[p];
+		bool crossingCorners[8] = [ false ]; # corners which participate in a sign-changing edge
+
+		for edge in edges:
+			if inside[ edge[0] ] != inside[ edge[1] ]:
+				crossingCorners[edge[0]] = true;
+				crossingCorners[edge[1]] = true;
+
+		planes.clear()
+		A.clear()
+		b.clear()
+
+		for ci in range(8):
+			pos_next = p + corners[ci]; # neighbor position
+			plane = field[pos_next]; # neighbor plane in field
+
+			if plane.normal.is_zero_vector(): # cell is invalid, normal is zero
+				continue;
+
+			if not crossingCorners[ci]: # corner doesn't participate in sign change
+				continue;
+
+			if abs(plane.dist) > MAX_CORNER_DISTANCE: # distance to isosurface is excessively large
+				continue;
+
+			voxelCenter = p + vec3(0.5)
+			
+			# push SDF-distance towards voxel center for improved error solving later on
+			for ai in range(3):
+				vec3 normal = EPSILON * axes[ai];
+				planes.add( plane(dot(normal, voxelCenter), normal) ) # not entirely obvious?
+
+			# use the least-squares algorithm to find the minimizer for the vertex, if possible
+			vec3 vertex = solve_qef_leastsquares(A, b);
+
+			if not is_finite(vertex): # solve failed, one or more axes are undefined or impossibly large
+				vertex = voxelCenter;
+
+			vertex = clamp(vertex, p, p + vec3(1)) # clamp vertex position inside its own cell
+
+			vox.index = mesh.vertices.size();
+			mesh.vertices.add(vertex); # add vertex and index to mesh
+
+
+def construct_faces(field, mesh, voxels):
+	
+	# edges connecting to top-right voxel corner (the direction we're marching)
+	static farEdges = [ (3,7), (5,7), (6,7) ];
+
+	for vox, p in voxels:
+		
+		# p = 3D array coordinate (vec3)
+		
+		v0 = vox.index; # index of first quad vertex
+
+		if v0 == -1:
+			return; # our current voxel is uniform
+
+		bool inside[8]
+
+		for ci in range(8):
+			inside[ci] = (field[p + corners[ci]].dist <= 0)
+
+		for edge, ai in iterate(farEdges):
+
+			if inside[ edge[0] ] == inside[ edge[1] ]: # this edge doesn't sign-change
+				continue;
+
+			int v1, v2, v3; # define vertex indices
+
+			if ai == 0:
+				v1 = voxels[p + vec3(0,0,1)].index;
+				v2 = voxels[p + vec3(0,1,0)].index;
+				v3 = voxels[p + vec3(0,1,1)].index;
+			if ai == 1:
+				v1 = voxels[p + vec3(0,0,1)].index;
+				v2 = voxels[p + vec3(1,0,0)].index;
+				v3 = voxels[p + vec3(1,0,1)].index;
+			if ai == 2:
+				v1 = voxels[p + vec3(0,1,0)].index;
+				v2 = voxels[p + vec3(1,0,0)].index;
+				v3 = voxels[p + vec3(1,1,0)].index;
+
+			if v1 < 0 or v2 < 0 or v3 < 0:
+				continue; # an index is missing; can't triangulate
+
+			t0 = [ v0, v1, v3 ]; # first triangle
+			t1 = [ v0, v3, v2 ]; # second triangle
+
+			# CORRECT NORMALS HERE 
+			
+			mesh.triangles.add(t0);
+			mesh.triangles.add(t1);
+
+
