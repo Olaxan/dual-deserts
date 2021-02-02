@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MeshFilter))]
+[RequireComponent(typeof(MeshRenderer))]
 public class ContourGeneratorScript : MonoBehaviour
 {
 
@@ -79,7 +81,10 @@ public class ContourGeneratorScript : MonoBehaviour
 		// Not nice
 		iso.ForEach3( (Vector3Int pos) => { iso[pos] = new IsoPoint(float.MaxValue, Vector3.zero); } );
 
-		Generator.AddSphere(iso, size / 2, 1);
+		var center = (Vector3)size * 0.5f + new Vector3(0, 0, size.z) * 2.0f / 16.0f;
+		float rad = size.x * 3.5f / 16.0f;
+
+		Generator.AddSphere(iso, center, rad);
 
 		BuildVertices(iso, mesh);
 		BuildTriangles(iso, mesh);
@@ -254,7 +259,11 @@ public class ContourGeneratorScript : MonoBehaviour
 				if (v1 < 0 || v2 < 0 || v3 < 0)
 					continue;
 
-				mesh.triangles.AddRange(new int[] { v0, v1, v3, v0, v3, v2 });
+				if (inside[edge.Item1] != (ai == 1))
+					mesh.triangles.AddRange(new int[] { v0, v1, v3, v0, v3, v2 });
+				else
+					mesh.triangles.AddRange(new int[] { v0, v3, v1, v0, v2, v3 });
+
 			}
 		});
 	}
