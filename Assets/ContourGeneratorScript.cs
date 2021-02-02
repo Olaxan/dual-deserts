@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter))]
 public class ContourGeneratorScript : MonoBehaviour
 {
 
@@ -15,8 +14,21 @@ public class ContourGeneratorScript : MonoBehaviour
 	MeshRenderer meshRenderer;
 	MeshCollider meshCollider;
 
-	Array3<IsoPoint> iso;
-	Array3<int> indices;
+	class VoxelMesh
+	{
+		public VoxelMesh(Vector3Int size)
+		{
+			int count = size.x * size.y * size.z;
+			vertices = new List<Vector3>(count);
+			triangles = new List<int>(count);
+			voxels = new Array3<int>(size - new Vector3Int(1, 1, 1));
+			voxels.Fill(-1);
+		}
+
+		public List<Vector3> vertices;
+		public List<int> triangles;
+		public Array3<int> voxels;
+	};
 
 	static Vector3Int[] corners =  
 	{
@@ -37,36 +49,70 @@ public class ContourGeneratorScript : MonoBehaviour
 		new Vector3(0,0,1)
 	};
 
-	static Vector2Int[] edges = 
+	static (int, int)[] edges = 
 	{
-		new Vector2Int(0,1),
-		new Vector2Int(0,2),
-		new Vector2Int(0,4),
-		new Vector2Int(1,3),
-		new Vector2Int(1,5),
-		new Vector2Int(2,3),
-		new Vector2Int(2,6),
-		new Vector2Int(3,7),
-		new Vector2Int(4,5),
-		new Vector2Int(4,6),
-		new Vector2Int(5,7),
-		new Vector2Int(6,7),
+		(0,1),
+		(0,2),
+		(0,4),
+		(1,3),
+		(1,5),
+		(2,3),
+		(2,6),
+		(3,7),
+		(4,5),
+		(4,6),
+		(5,7),
+		(6,7),
 	};
 
 	static int numCorners = 8;
-	static int numEdges = 3 * 4;
 
     // Start is called before the first frame update
     void Start()
     {
-		contour = new Mesh();
-		meshFilter = GetComponent<MeshFilter>();
-		meshRenderer = GetComponent<MeshRenderer>();
-		meshCollider = GetComponent<MeshCollider>();
 
-		iso = new Array3<IsoPoint>(size);
-		indices = new Array3<int>(size);
+		Setup();
+
+		var iso = new Array3<IsoPoint>(size);
+		var mesh = new VoxelMesh(size);
+
+		// Not nice
+		iso.ForEach3( (Vector3Int pos) => { iso[pos] = new IsoPoint(float.MaxValue, Vector3.zero); } );
+
+		Generator.AddSphere(iso, size / 2, 1);
+
+		BuildVertices(iso, mesh);
+		BuildTriangles(iso, mesh);
+
+		Debug.Log(string.Format("Built {0} vertices, {1} tris", 
+					mesh.vertices.Count, mesh.triangles.Count / 3)); 
+
+		contour.vertices = mesh.vertices.ToArray(); // fix -- we shouldn't need to convert
+		contour.triangles = mesh.triangles.ToArray();
     }
+
+	void Setup()
+	{
+
+		meshFilter = GetComponent<MeshFilter>();
+		if (meshFilter == null)
+			meshFilter = gameObject.AddComponent<MeshFilter>();
+
+		meshRenderer = GetComponent<MeshRenderer>();
+		if (meshRenderer == null)
+			meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+		//meshCollider = GetComponent<MeshCollider>();
+
+		contour = meshFilter.sharedMesh;
+		if (contour == null)
+		{
+			contour = new Mesh();
+			contour.name = "Contour";
+			contour.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+			meshFilter.sharedMesh = contour;
+		}
+	}
 
     // Update is called once per frame
     void Update()
@@ -74,13 +120,13 @@ public class ContourGeneratorScript : MonoBehaviour
         
     }
 
-	void BuildVertices()
+	void BuildVertices(Array3<IsoPoint> iso, VoxelMesh mesh)
 	{
 		List<IsoPoint> points = new List<IsoPoint>();
 		List<Vector3> normals = new List<Vector3>();
 		List<float> dists = new List<float>();
 
-		indices.ForEach3(indices.Size, (Vector3Int pos) =>
+		mesh.voxels.ForEach3( (Vector3Int pos) =>
 		{
 			bool[] inside = new bool[numCorners];
 			int numInside = 0;
@@ -97,12 +143,12 @@ public class ContourGeneratorScript : MonoBehaviour
 
 			bool[] crossingCorners = new bool[numCorners];
 
-			foreach (Vector2Int edge in edges)
+			foreach (var edge in edges)
 			{
-				if (inside[edge.x] != inside[edge.y])
+				if (inside[edge.Item1] != inside[edge.Item2])
 				{
-					crossingCorners[edge.x] = true;
-					crossingCorners[edge.y] = true;
+					crossingCorners[edge.Item1] = true;
+					crossingCorners[edge.Item2] = true;
 				}
 			}
 
@@ -121,16 +167,94 @@ public class ContourGeneratorScript : MonoBehaviour
 				if (Mathf.Abs(point.Dist) > maxCornerDistance)
 					continue;
 
-				Vector3 voxelCenter = pos + new Vector3(0.5f, 0.5f, 0.5f);
+				point.Dist = Vector3.Dot(point.Normal, pos_next) - point.Dist;
+				points.Add(point);
+			}
 
-				foreach (Vector3 axis in axes)
+			Vector3 voxelCenter = pos + new Vector3(0.5f, 0.5f, 0.5f);
+
+			foreach (Vector3 axis in axes)
+			{
+				Vector3 n = pushSize * axis;
+				points.Add(new IsoPoint(Vector3.Dot(n, voxelCenter), n));
+			}
+
+			foreach (IsoPoint p in points)
+			{
+				normals.Add(p.Normal);
+				dists.Add(p.Dist);
+			}
+
+			// if not solved (which it isn't cuz we're not solving)
+			Vector3 vertex = voxelCenter;
+
+			// clamp vertex within own cell
+
+			mesh.voxels[pos] = mesh.vertices.Count;
+			mesh.vertices.Add(vertex);
+
+		});
+	}
+
+	static (int, int)[] farEdges = 
+	{
+		(3, 7), (5, 7), (6, 7)
+	};
+
+	// ugh
+	static Vector3Int d0 = new Vector3Int(0,0,1);
+	static Vector3Int d1 = new Vector3Int(0,1,0);
+	static Vector3Int d2 = new Vector3Int(0,1,1);
+	static Vector3Int d4 = new Vector3Int(1,0,0);
+	static Vector3Int d5 = new Vector3Int(1,0,1);
+	static Vector3Int d6 = new Vector3Int(1,1,0);
+
+	void BuildTriangles(Array3<IsoPoint> iso, VoxelMesh mesh)
+	{
+		mesh.voxels.ForEach3( (Vector3Int pos) => 
+		{
+			var v0 = mesh.voxels[pos];
+
+			if (v0 == -1)
+				return;
+
+			var inside = new bool[numCorners];
+			
+			for (int ci = 0; ci < numCorners; ci++)
+				inside[ci] = (iso[pos + corners[ci]].Dist <= 0);
+
+			for (int ai = 0; ai < 3; ai++)
+			{
+				var edge = farEdges[ai];
+
+				if (inside[edge.Item1] == inside[edge.Item2])
+					continue;
+
+				int v1, v2, v3;
+
+				switch (ai)
 				{
-					Vector3 n = pushSize * axis;
-					points.Add(new IsoPoint(Vector3.Dot(n, voxelCenter), n));
+					case 0:
+						v1 = mesh.voxels[pos + d0];
+						v2 = mesh.voxels[pos + d1];
+						v3 = mesh.voxels[pos + d2];
+						break;
+					case 1:
+						v1 = mesh.voxels[pos + d0];
+						v2 = mesh.voxels[pos + d4];
+						v3 = mesh.voxels[pos + d5];
+						break;
+					default:
+						v1 = mesh.voxels[pos + d1];
+						v2 = mesh.voxels[pos + d4];
+						v3 = mesh.voxels[pos + d6];
+						break;
 				}
 
-				Vector3 vertex = new Vector3(0, 0, 0); // Solve();
+				if (v1 < 0 || v2 < 0 || v3 < 0)
+					continue;
 
+				mesh.triangles.AddRange(new int[] { v0, v1, v3, v0, v3, v2 });
 			}
 		});
 	}
