@@ -327,8 +327,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1396e9efc4ff3647d9c895a0df86a9df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 16, y: 16, z: 16}
-  maxCornerDistance: 1
+  size: {x: 128, y: 128, z: 128}
+  maxCornerDistance: 0
   pushSize: 0.01
 --- !u!23 &1805263437
 MeshRenderer:
@@ -348,7 +348,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: a08c59225a0863c97ab43ba8098b8622, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

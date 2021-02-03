@@ -190,8 +190,9 @@ public class ContourGeneratorScript : MonoBehaviour
 				dists.Add(p.Dist);
 			}
 
-			// if not solved (which it isn't cuz we're not solving)
-			Vector3 vertex = voxelCenter;
+			Vector3 vertex;
+			if (!Solver.LeastSquares(normals, dists, out vertex))
+				vertex = voxelCenter;
 
 			// clamp vertex within own cell
 
@@ -220,7 +221,7 @@ public class ContourGeneratorScript : MonoBehaviour
 		{
 			var v0 = mesh.voxels[pos];
 
-			if (v0 == -1)
+			if (v0 < 0)
 				return;
 
 			var inside = new bool[numCorners];
@@ -257,13 +258,15 @@ public class ContourGeneratorScript : MonoBehaviour
 				}
 
 				if (v1 < 0 || v2 < 0 || v3 < 0)
+				{
+					Debug.LogWarning("Incorrect index data in model");
 					continue;
+				}
 
-				if (inside[edge.Item1] != (ai == 1))
+				if (inside[edge.Item1] == (ai == 1))
 					mesh.triangles.AddRange(new int[] { v0, v1, v3, v0, v3, v2 });
 				else
 					mesh.triangles.AddRange(new int[] { v0, v3, v1, v0, v2, v3 });
-
 			}
 		});
 	}
