@@ -35,4 +35,36 @@ public class Generator
 			}
 		});
 	}
+
+	public static void AddCylinder(Array3<IsoPoint> field, Vector2 center, float rad)
+	{
+		field.ForEach3( (Vector3Int pos) =>
+		{
+			var point = field[pos];
+			var vec = new Vector2(pos.x, pos.y) - center;
+			float d = vec.magnitude - rad;
+
+			if (d < point.Dist)
+			{
+				point.Dist = d;
+				point.Normal = vec.normalized;
+			}
+		});
+	}
+
+	public static void RemoveCylinder(Array3<IsoPoint> field, Vector2 center, float rad)
+	{
+		field.ForEach3((Vector3Int pos) =>
+		{
+			var point = field[pos];
+			var vec = new Vector2(pos.x, pos.y) - center;
+			float d = vec.magnitude - rad;
+
+			if (-d > point.Dist)
+			{
+				point.Dist = -d;
+				point.Normal = -vec.normalized;
+			}
+		});
+	}
 }
