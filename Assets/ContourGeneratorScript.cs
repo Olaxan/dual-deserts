@@ -85,6 +85,7 @@ public class ContourGeneratorScript : MonoBehaviour
 		float rad = size.x * 3.5f / 16.0f;
 
 		Generator.AddSphere(iso, center, rad);
+		Generator.RemoveSphere(iso, center * 2.0f, rad);
 
 		BuildVertices(iso, mesh);
 		BuildTriangles(iso, mesh);
