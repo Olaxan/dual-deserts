@@ -4,22 +4,25 @@ using UnityEngine;
 
 public class Solver 
 {
+	static Vector4 empty = new Vector4(0,0,0,1);
+
 	public static bool SolveMatrix3(Matrix4x4 mat, Vector4 b, out Vector3 vertex)
 	{
-		vertex = Vector3.positiveInfinity;
 
 		var det = mat.determinant;
 
 		if (Mathf.Abs(det) <= 1e-12)
+		{
+			vertex = Vector3.positiveInfinity;
 			return false;
+		}
 
-		// likely we need to transpose here
 		vertex = new Vector3
 			(
-				new Matrix4x4(b, mat.GetColumn(1), mat.GetColumn(2), Vector4.zero).determinant,
-				new Matrix4x4(mat.GetColumn(0), b, mat.GetColumn(2), Vector4.zero).determinant,
-				new Matrix4x4(mat.GetColumn(0), mat.GetColumn(1), b, Vector4.zero).determinant
-			);
+				new Matrix4x4(b, mat.GetColumn(1), mat.GetColumn(2), empty).determinant,
+				new Matrix4x4(mat.GetColumn(0), b, mat.GetColumn(2), empty).determinant,
+				new Matrix4x4(mat.GetColumn(0), mat.GetColumn(1), b, empty).determinant
+			) / det;
 
 		return true;
 	}
@@ -30,14 +33,13 @@ public class Solver
 
 		if (N == 3)
 		{
-			var mat = new Matrix4x4(A[0], A[1], A[2], Vector4.zero);
+			var mat = new Matrix4x4(A[0], A[1], A[2], empty);
 			var vec = new Vector4(b[0], b[1], b[2], 0);
 			return SolveMatrix3(mat, vec, out vertex);
 		}
 
-		var At_A = new Matrix4x4();
-		var At_b = new Vector4();
-
+		var At_A = Matrix4x4.identity;
+		var At_b = Vector4.zero;
 
 		for (int i = 0; i < 3; i++)
 		{

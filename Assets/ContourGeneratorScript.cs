@@ -172,8 +172,8 @@ public class ContourGeneratorScript : MonoBehaviour
 				if (Mathf.Abs(point.Dist) > maxCornerDistance)
 					continue;
 
-				point.Dist = Vector3.Dot(point.Normal, pos_next) - point.Dist;
-				points.Add(point);
+				var p = new IsoPoint(Vector3.Dot(point.Normal, pos_next) - point.Dist, point.Normal);
+				points.Add(p);
 			}
 
 			Vector3 voxelCenter = pos + new Vector3(0.5f, 0.5f, 0.5f);
@@ -191,8 +191,17 @@ public class ContourGeneratorScript : MonoBehaviour
 			}
 
 			Vector3 vertex;
-			if (!Solver.LeastSquares(normals, dists, out vertex))
+			if (Solver.LeastSquares(normals, dists, out vertex))
+			{
+				//vertex = new Vector3(
+				//		Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
+				//		Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
+				//		Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
+				//	);
+			}
+			else
 				vertex = voxelCenter;
+
 
 			// clamp vertex within own cell
 
