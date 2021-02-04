@@ -85,7 +85,7 @@ public class ContourGeneratorScript : MonoBehaviour
 		float rad = size.x * 3.5f / 16.0f;
 
 		Generator.AddSphere(iso, center, rad);
-		Generator.RemoveSphere(iso, center * 2.0f, rad);
+		Generator.RemoveCylinder(iso, new Vector2(center.x, center.y), rad / 3);
 
 		BuildVertices(iso, mesh);
 		BuildTriangles(iso, mesh);
@@ -95,6 +95,7 @@ public class ContourGeneratorScript : MonoBehaviour
 
 		contour.vertices = mesh.vertices.ToArray(); // fix -- we shouldn't need to convert
 		contour.triangles = mesh.triangles.ToArray();
+		contour.RecalculateNormals();
     }
 
 	void Setup()

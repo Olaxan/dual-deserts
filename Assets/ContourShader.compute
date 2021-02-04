@@ -1,0 +1,196 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel ContourGenerator
+
+static const int xyNumThreads = 8;
+static const int numCorners = 8;
+static const int numEdges = 12;
+static const int numAxes = 3;
+static const int numPoints = numCorners + numAxes;
+
+struct IsoPoint
+{
+	float dist;
+	float3 normal;
+};
+
+static uint3 corners[8] = 
+{
+	uint3(0,0,0),
+	uint3(0,0,1),
+	uint3(0,1,0),
+	uint3(0,1,1),
+	uint3(1,0,0),
+	uint3(1,0,1),
+	uint3(1,1,0),
+	uint3(1,1,1)
+};
+
+static uint3 axes[3] = 
+{
+	uint3(1,0,0),
+	uint3(0,1,0),
+	uint3(0,0,1)
+};
+
+static uint2 edges[numEdges] = 
+{
+	uint2(0,1),
+	uint2(0,2),
+	uint2(0,4),
+	uint2(1,3),
+	uint2(1,5),
+	uint2(2,3),
+	uint2(2,6),
+	uint2(3,7),
+	uint2(4,5),
+	uint2(4,6),
+	uint2(5,7),
+	uint2(6,7)
+};
+
+RWStructuredBuffer<IsoPoint> iso;
+
+int3 sizeAxes;
+float maxCornerDistance;
+float pushSize;
+
+int getIndexFromId(int3 id)
+{
+	return ((id.x * sizeAxes.y) + id.y) * sizeAxes.x + id.x;
+}
+
+bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
+{
+	float det = determinant(A);
+
+	if (abs(det) <= 1e-12)
+		return false;
+
+	vertex = float3
+	(
+		determinant(float3x3(b, A[1], A[2])),
+		determinant(float3x3(A[0], b, A[2])),
+		determinant(float3x3(A[0], A[1], b))
+	) / det;
+
+	return true;
+}
+
+bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out float3 vertex)
+{
+	if (N == 3)
+	{
+		float3x3 mat = float3x3(A[0], A[1], A[2]);
+		float3 vec = float3(b[0], b[1], b[2]);
+		return SolveMatrix(mat, vec, vertex);
+	}
+
+	float3x3 At_A;
+	float3 At_b;
+
+	[unroll(3)]
+	for (int i = 0; i < 3; i++)
+	{
+		[unroll(3)]
+		for (int j = 0; j < 3; j++)
+		{
+			float sum = 0;
+
+			for (int k = 0; k < N; k++)
+				sum += A[k][i] * A[k][j];
+
+			At_A[i][j] = sum;
+		}
+	}
+
+	[unroll(3)]
+	for (int u = 0; u < 3; u++)
+	{
+		float sum = 0;
+
+		for (int v = 0; v < N; v++)
+			sum += A[v][u] * b[v];
+
+		At_b[u] = sum;
+	}
+
+	return SolveMatrix(At_A, At_b, vertex);
+}
+
+[numthreads(xyNumThreads, xyNumThreads, 1)]
+void ContourGenerator(uint3 id : SV_DispatchThreadID)
+{
+	bool inside[numCorners];
+	int numInside = 0;
+
+	int index = getIndexFromId(id);
+
+	for (int ci = 0; ci < numCorners; ci++)
+	{
+		inside[ci] = (iso[getIndexFromId(id + corners[ci])].dist <= 0);
+		if (inside[ci])
+			numInside++;
+	}
+
+	if (numInside == 0 || numInside == numCorners)
+		return;
+
+	bool crossingCorners[numCorners];
+
+	for (int e = 0; e < numEdges; e++)
+	{
+		if (inside[edges[e].x] != inside[edges[e].y])
+		{
+			crossingCorners[edges[e].x] = true;
+			crossingCorners[edges[e].y] = true;
+		}
+	}
+
+	IsoPoint points[numPoints];
+	float3 A[numPoints];
+	float b[numPoints];
+
+	int pointCount = 0;
+
+	// if somethings is broken, check here for ci
+	for (int cj = 0; cj < numCorners; cj++)
+	{
+		uint3 n_pos = id + corners[cj];
+		IsoPoint n_point = iso[getIndexFromId(n_pos)];
+
+		if (!crossingCorners[cj])
+			continue;
+
+		if (abs(n_point.dist) > maxCornerDistance)
+			continue;
+
+		IsoPoint p;
+		p.dist = dot(n_point.normal, float3(n_pos)) - n_point.dist;
+		p.normal = n_point.normal;
+		points[pointCount++] = p;
+	}
+
+	float3 voxelCenter = float3(id) + float3(0.5, 0.5, 0.5);
+
+	for (int ai = 0; ai < numAxes; ai++)
+	{
+		IsoPoint p;
+		float3 n = pushSize * float3(axes[ai]);
+		p.dist = dot(n, voxelCenter);
+		p.normal = n;
+		points[pointCount++] = p;
+	}
+
+	for (int pi = 0; pi < pointCount; pi++)
+	{
+		A[pi] = points[pi].normal;
+		b[pi] = points[pi].dist;
+	}
+
+	float3 vertex;
+	if (SolveError(pointCount, A, b, vertex))
+	{
+		// clamp and coax
+	}
+	else vertex = voxelCenter;
+}
