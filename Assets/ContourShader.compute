@@ -1,6 +1,6 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMakeVerticesDirect
-#pramga kernel CSMakeTrianglesIndirect
+#pragma kernel CSMakeTrianglesIndirect
 
 static const int xyNumThreads = 8;
 static const int numCorners = 8;
@@ -199,8 +199,8 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	}
 	else vertex = voxelCenter;
 
-	vertices[index] = vertex;
-	indices[index] = index;
+	vertices.Append(vertex);
+	indices.Append(0);
 }
 
 [numthreads(xyNumThreads, xyNumThreads, 1)]
