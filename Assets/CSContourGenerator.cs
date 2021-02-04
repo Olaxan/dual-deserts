@@ -17,8 +17,15 @@ public class CSContourGenerator : MonoBehaviour
 	Mesh contour;
 	MeshFilter meshFilter;
 
-	ComputeBuffer triangleBuffer;
 	ComputeBuffer isoBuffer;
+	ComputeBuffer triangleBuffer;
+	ComputeBuffer argsBuffer;
+	int _kernelDirect;
+	int _kernelIndirect;
+	int[] args;
+	uint _threadSizeX;
+	uint _threadSizeY;
+	uint _threadSizeZ;
 
     // Start is called before the first frame update
     void Start()
@@ -48,6 +55,12 @@ public class CSContourGenerator : MonoBehaviour
 			contour.name = "Contour";
 			meshFilter.sharedMesh = contour;
 		}
+
+		_kernelDirect = shader.FindKernel("CSMakeVerticesDirect");
+		_kernelIndirect = shader.FindKernel("CSMakeTrianglesIndirect");
+
+		shader.GetKernelThreadGroupSizes(_kernelDirect, 
+				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 	}
 
 	void SetupBuffers()
@@ -57,7 +70,19 @@ public class CSContourGenerator : MonoBehaviour
 		int triCount = voxelCount * 3 * 2;
 
 		ReleaseBuffers();
-		//triangleBuffer(triCount, 
+
+		// Create buffer for isosurface on shader !!! POSSIBLE PACK ISSUES !!!
+		isoBuffer = new ComputeBuffer(voxelCount, 4 + 3 * 4);
+
+		// Provide thread arguments for indirect execution
+		argsBuffer = new ComputeBuffer(1, 16, ComputeBufferType.IndirectArguments);
+		args = new int[4];
+		args[0] = (int)_threadSizeX;
+		args[1] = (int)_threadSizeY;
+		args[2] = (int)_threadSizeZ;
+		args[3] = 0;
+		argsBuffer.SetData(args);
+
 	}
 
 	void ReleaseBuffers()
@@ -75,5 +100,11 @@ public class CSContourGenerator : MonoBehaviour
 	void Generate()
 	{
 		shader.SetInts("sizeAxes", new int[] { size.x, size.y, size.z });
+		shader.Dispatch(_kernelDirect, 
+				Mathf.CeilToInt(size.x / _threadSizeX), 
+				Mathf.CeilToInt(size.y / _threadSizeY), 
+				Mathf.CeilToInt(size.z / _threadSizeZ)
+				);
+
 	}
 }

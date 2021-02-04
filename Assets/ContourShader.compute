@@ -1,5 +1,6 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel ContourGenerator
+#pragma kernel CSMakeVerticesDirect
+#pramga kernel CSMakeTrianglesIndirect
 
 static const int xyNumThreads = 8;
 static const int numCorners = 8;
@@ -49,6 +50,8 @@ static uint2 edges[numEdges] =
 };
 
 RWStructuredBuffer<IsoPoint> iso;
+AppendStructuredBuffer<float3> vertices;
+AppendStructuredBuffer<int> indices;
 
 int3 sizeAxes;
 float maxCornerDistance;
@@ -62,6 +65,7 @@ int getIndexFromId(int3 id)
 bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
 {
 	float det = determinant(A);
+	vertex = float3(0,0,0);
 
 	if (abs(det) <= 1e-12)
 		return false;
@@ -118,8 +122,9 @@ bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out flo
 }
 
 [numthreads(xyNumThreads, xyNumThreads, 1)]
-void ContourGenerator(uint3 id : SV_DispatchThreadID)
+void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 {
+
 	bool inside[numCorners];
 	int numInside = 0;
 
@@ -193,4 +198,12 @@ void ContourGenerator(uint3 id : SV_DispatchThreadID)
 		// clamp and coax
 	}
 	else vertex = voxelCenter;
+
+	vertices[index] = vertex;
+	indices[index] = index;
+}
+
+[numthreads(xyNumThreads, xyNumThreads, 1)]
+void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
+{
 }
