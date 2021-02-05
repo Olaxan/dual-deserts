@@ -3,9 +3,12 @@
 #pragma kernel CSMakeTrianglesIndirect
 
 static const int xyNumThreads = 8;
+
 static const int numCorners = 8;
-static const int numEdges = 12;
 static const int numAxes = 3;
+static const int numEdges = 12;
+static const int numFarEdges = 3;
+static const int numNeighbours = 6;
 static const int numPoints = numCorners + numAxes;
 
 struct IsoPoint
@@ -14,7 +17,7 @@ struct IsoPoint
 	float3 normal;
 };
 
-static uint3 corners[8] = 
+static uint3 corners[numCorners] = 
 {
 	uint3(0,0,0),
 	uint3(0,0,1),
@@ -26,7 +29,7 @@ static uint3 corners[8] =
 	uint3(1,1,1)
 };
 
-static uint3 axes[3] = 
+static uint3 axes[numAxes] = 
 {
 	uint3(1,0,0),
 	uint3(0,1,0),
@@ -49,13 +52,31 @@ static uint2 edges[numEdges] =
 	uint2(6,7)
 };
 
+static uint2 farEdges[numFarEdges] = 
+{
+	uint2(3,7),
+	uint2(5,7),
+	uint2(6,7)
+};
+
+static int3 neighbours[numNeighbours] = 
+{
+	int3(0,0,1),
+	int3(0,1,0),
+	int3(0,1,1),
+	int3(1,0,0),
+	int3(1,0,1),
+	int3(1,1,0)
+};
+
 RWStructuredBuffer<IsoPoint> iso;
+RWStructuredBuffer<int> indices;
 AppendStructuredBuffer<float3> vertices;
-AppendStructuredBuffer<int> indices;
+AppendStructuredBuffer<int3> triangles;
 
 int3 sizeAxes;
 float maxCornerDistance;
-float pushSize;
+float centerBias;
 
 int getIndexFromId(int3 id)
 {
@@ -65,10 +86,12 @@ int getIndexFromId(int3 id)
 bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
 {
 	float det = determinant(A);
-	vertex = float3(0,0,0);
 
 	if (abs(det) <= 1e-12)
+	{
+		vertex = float3(0,0,0);
 		return false;
+	}
 
 	vertex = float3
 	(
@@ -129,6 +152,7 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	int numInside = 0;
 
 	int index = getIndexFromId(id);
+	indices[index] = -1;
 
 	for (int ci = 0; ci < numCorners; ci++)
 	{
@@ -180,7 +204,7 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	for (int ai = 0; ai < numAxes; ai++)
 	{
 		IsoPoint p;
-		float3 n = pushSize * float3(axes[ai]);
+		float3 n = centerBias * float3(axes[ai]);
 		p.dist = dot(n, voxelCenter);
 		p.normal = n;
 		points[pointCount++] = p;
@@ -199,11 +223,64 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	}
 	else vertex = voxelCenter;
 
+	uint idx = indices.IncrementCounter() - 1;
+	indices[index] = idx;
 	vertices.Append(vertex);
-	indices.Append(0);
 }
 
 [numthreads(xyNumThreads, xyNumThreads, 1)]
 void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
 {
+	int v0 = indices[getIndexFromId(id)];
+	
+	if (v0 < 0)
+		return;
+
+	bool inside[numCorners];
+
+	for (int ci = 0; ci < numCorners; ci++)
+		inside[ci] = (iso[getIndexFromId(id + corners[ci])].dist <= 0);
+
+	for (int ai = 0; ai < numFarEdges; ai++)
+	{
+		uint2 edge = farEdges[ai];
+
+		if (inside[edge.x] == inside[edge.y])
+			continue;
+
+		int v1, v2, v3;
+
+		switch (ai)
+		{
+			case 0:
+				v1 = indices[getIndexFromId(id + neighbours[0])];
+				v2 = indices[getIndexFromId(id + neighbours[1])];
+				v3 = indices[getIndexFromId(id + neighbours[2])];
+				break;
+			case 1:
+				v1 = indices[getIndexFromId(id + neighbours[0])];
+				v2 = indices[getIndexFromId(id + neighbours[3])];
+				v3 = indices[getIndexFromId(id + neighbours[4])];
+				break;
+			default:
+				v1 = indices[getIndexFromId(id + neighbours[1])];
+				v2 = indices[getIndexFromId(id + neighbours[3])];
+				v3 = indices[getIndexFromId(id + neighbours[5])];
+				break;
+		}
+
+		if (v1 < 0 || v2 < 0 || v3 < 0)
+			continue;
+
+		if (inside[edge.x] == (ai == 1))
+		{
+			triangles.Append(int3(v0,v1,v3));
+			triangles.Append(int3(v0,v3,v2));
+		}
+		else
+		{
+			triangles.Append(int3(v0,v3,v1));
+			triangles.Append(int3(v0,v2,v3));
+		}
+	}
 }

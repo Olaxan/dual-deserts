@@ -228,6 +228,7 @@ public class ContourGeneratorScript : MonoBehaviour
 
 	void BuildTriangles(Array3<IsoPoint> iso, VoxelMesh mesh)
 	{
+
 		mesh.voxels.ForEach3( (Vector3Int pos) => 
 		{
 			var v0 = mesh.voxels[pos];
