@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  size: {x: 128, y: 128, z: 128}
+  size: {x: 8, y: 8, z: 8}
   centerBias: 0.1
   maxCornerDistance: 1
 --- !u!23 &695777394
@@ -423,7 +423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1396e9efc4ff3647d9c895a0df86a9df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 128, y: 128, z: 128}
+  size: {x: 8, y: 8, z: 8}
   maxCornerDistance: 1
   pushSize: 0.1
 --- !u!23 &1805263437

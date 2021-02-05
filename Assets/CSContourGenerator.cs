@@ -41,6 +41,7 @@ public class CSContourGenerator : MonoBehaviour
 
 		Generator.AddSphere(iso, center, rad);
 		Generator.RemoveCylinder(iso, new Vector2(center.x, center.y), rad / 3);
+		Generator.RemoveSphere(iso, center * 1.2f, rad);
 
 		SetupBuffers();
     	Generate(iso);    
@@ -132,10 +133,16 @@ public class CSContourGenerator : MonoBehaviour
 	void Generate(Array3<IsoPoint> iso)
 	{
 
+		Vector3Int voxelSize = size - Vector3Int.one;
+		int pointCount = size.x * size.y * size.z;
+		int indexCount = voxelSize.x * voxelSize.y * voxelSize.z;
+
+		var t0 = Time.realtimeSinceStartup;
+
 		Vector3Int ts = new Vector3Int(
-				Mathf.FloorToInt(size.x / _threadSizeX), 
-				Mathf.FloorToInt(size.y / _threadSizeY), 
-				Mathf.FloorToInt(size.z / _threadSizeZ));
+				Mathf.CeilToInt(size.x / _threadSizeX), 
+				Mathf.CeilToInt(size.y / _threadSizeY), 
+				Mathf.CeilToInt(size.z / _threadSizeZ));
 
 		shader.SetInts("sizeAxes", new int[] { size.x, size.y, size.z });
 		shader.SetFloat("maxCornerDistance", maxCornerDistance);
@@ -165,10 +172,17 @@ public class CSContourGenerator : MonoBehaviour
 		int[] triangles = new int[2 * 3 * quadCount];
 		Vector3[] verts = new Vector3[vertexCount];
 
-		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles", vertexCount, quadCount * 2));
-
 		quadBuffer.GetData(triangles);
 		vertexBuffer.GetData(verts);
+
+		Debug.Log("GPU:");
+		var kuk = new int[indexCount];
+		indexBuffer.GetData(kuk);
+		Debug.Log(string.Join(", ", kuk));
+
+		var t1 = Time.realtimeSinceStartup;
+		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles in {2} seconds", 
+			vertexCount, quadCount * 2, t1 - t0));
 
 		float chkSumA = 0;
 		int chkSumB = 0;
@@ -180,6 +194,7 @@ public class CSContourGenerator : MonoBehaviour
 			chkSumB += triangles[j];
 
 		Debug.Log(string.Format("CS: Checksum: {0} / {1}", chkSumA, chkSumB));
+		Debug.Log(string.Join(", ", triangles));
 
 		contour.vertices = verts;
 		contour.triangles = triangles;

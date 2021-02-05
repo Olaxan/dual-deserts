@@ -85,12 +85,17 @@ public class ContourGeneratorScript : MonoBehaviour
 
 		Generator.AddSphere(iso, center, rad);
 		Generator.RemoveCylinder(iso, new Vector2(center.x, center.y), rad / 3);
+		Generator.RemoveSphere(iso, center * 1.2f, rad);
+
+		var t0 = Time.realtimeSinceStartup;
 
 		BuildVertices(iso, mesh);
 		BuildTriangles(iso, mesh);
 
-		Debug.Log(string.Format("Created {0} vertices, {1} triangles", 
-					mesh.vertices.Count, mesh.triangles.Count / 3)); 
+		var t1 = Time.realtimeSinceStartup;
+
+		Debug.Log(string.Format("Created {0} vertices, {1} triangles in {2} seconds", 
+					mesh.vertices.Count, mesh.triangles.Count / 3, t1 - t0)); 
 
 		contour.vertices = mesh.vertices.ToArray(); // fix -- we shouldn't need to convert
 		contour.triangles = mesh.triangles.ToArray();
@@ -104,6 +109,11 @@ public class ContourGeneratorScript : MonoBehaviour
 			chkSumB += index;
 
 		Debug.Log(string.Format("Checksum: {0} / {1}", chkSumA, chkSumB));
+
+		Debug.Log("CPU:");
+		Debug.Log(string.Join(", ", mesh.voxels.Data));
+
+		Debug.Log(string.Join(", ", mesh.triangles));
 
 		contour.RecalculateNormals();
     }
@@ -203,15 +213,15 @@ public class ContourGeneratorScript : MonoBehaviour
 			}
 
 			Vector3 vertex;
-			if (Solver.LeastSquares(normals, dists, out vertex))
-			{
-				//vertex = new Vector3(
-				//		Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
-				//		Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
-				//		Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
-				//	);
-			}
-			else
+			//if (Solver.LeastSquares(normals, dists, out vertex))
+			//{
+			//	//vertex = new Vector3(
+			//	//		Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
+			//	//		Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
+			//	//		Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
+			//	//	);
+			//}
+			//else
 				vertex = voxelCenter;
 
 
