@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -90,11 +89,18 @@ public class ContourGeneratorScript : MonoBehaviour
 		BuildVertices(iso, mesh);
 		BuildTriangles(iso, mesh);
 
-		Debug.Log(string.Format("Built {0} vertices, {1} tris", 
+		Debug.Log(string.Format("Created {0} vertices, {1} triangles", 
 					mesh.vertices.Count, mesh.triangles.Count / 3)); 
 
 		contour.vertices = mesh.vertices.ToArray(); // fix -- we shouldn't need to convert
 		contour.triangles = mesh.triangles.ToArray();
+
+		float chkSum = 0;
+		foreach (var vertex in mesh.vertices)
+			chkSum += (vertex.x + vertex.y + vertex.z);	
+
+		Debug.Log(string.Format("Checksum: {0}", chkSum));
+
 		contour.RecalculateNormals();
     }
 
@@ -140,7 +146,7 @@ public class ContourGeneratorScript : MonoBehaviour
 
 			for (int ci = 0; ci < numCorners; ci++)
 			{
-				inside[ci] = (iso[pos + corners[ci]].Dist <= 0);
+				inside[ci] = (iso[pos + corners[ci]].dist <= 0);
 				if (inside[ci])
 					numInside++;
 			}
@@ -171,10 +177,10 @@ public class ContourGeneratorScript : MonoBehaviour
 				if (!crossingCorners[ci])
 					continue;
 
-				if (Mathf.Abs(point.Dist) > maxCornerDistance)
+				if (Mathf.Abs(point.dist) > maxCornerDistance)
 					continue;
 
-				var p = new IsoPoint(Vector3.Dot(point.Normal, pos_next) - point.Dist, point.Normal);
+				var p = new IsoPoint(Vector3.Dot(point.normal, pos_next) - point.dist, point.normal);
 				points.Add(p);
 			}
 
@@ -188,8 +194,8 @@ public class ContourGeneratorScript : MonoBehaviour
 
 			foreach (IsoPoint p in points)
 			{
-				normals.Add(p.Normal);
-				dists.Add(p.Dist);
+				normals.Add(p.normal);
+				dists.Add(p.dist);
 			}
 
 			Vector3 vertex;
@@ -239,7 +245,7 @@ public class ContourGeneratorScript : MonoBehaviour
 			var inside = new bool[numCorners];
 			
 			for (int ci = 0; ci < numCorners; ci++)
-				inside[ci] = (iso[pos + corners[ci]].Dist <= 0);
+				inside[ci] = (iso[pos + corners[ci]].dist <= 0);
 
 			for (int ai = 0; ai < 3; ai++)
 			{

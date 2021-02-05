@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
@@ -19,11 +17,13 @@ public class CSContourGenerator : MonoBehaviour
 
 	ComputeBuffer isoBuffer;
 	ComputeBuffer indexBuffer;
-	ComputeBuffer triangleBuffer;
-	ComputeBuffer argsBuffer;
+	ComputeBuffer vertexBuffer;
+	ComputeBuffer quadBuffer;
+	ComputeBuffer quadCountBuffer;
+	ComputeBuffer vertexCountBuffer;
+
 	int _kernelDirect;
 	int _kernelIndirect;
-	int[] args;
 	uint _threadSizeX;
 	uint _threadSizeY;
 	uint _threadSizeZ;
@@ -77,27 +77,28 @@ public class CSContourGenerator : MonoBehaviour
 	void SetupBuffers()
 	{
 		Vector3Int voxelSize = size - Vector3Int.one;
-		int voxelCount = voxelSize.x * voxelSize.y * voxelSize.z;
 		int pointCount = size.x * size.y * size.z;
-		int triCount = voxelCount * 3 * 2;
+		int indexCount = voxelSize.x * voxelSize.y * voxelSize.z;
+		int quadCount = indexCount * 3 * 2;
 
 		ReleaseBuffers();
 
 		// Create buffer for isosurface on shader !!! POSSIBLE PACK ISSUES !!!
-		isoBuffer = new ComputeBuffer(voxelCount, 4 * sizeof(float));
+		isoBuffer = new ComputeBuffer(pointCount, 4 * sizeof(float));
+		indexBuffer = new ComputeBuffer(indexCount, sizeof(int), ComputeBufferType.Counter);
+		vertexBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float), ComputeBufferType.Append);
+		quadBuffer = new ComputeBuffer(indexCount, 2 * 3 * sizeof(int), ComputeBufferType.Append);
+		quadCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
+		vertexCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 
-		// Provide thread arguments for indirect execution
-		argsBuffer = new ComputeBuffer(1, 16, ComputeBufferType.IndirectArguments);
-		args = new int[4];
-		args[0] = (int)_threadSizeX;
-		args[1] = (int)_threadSizeY;
-		args[2] = (int)_threadSizeZ;
-		args[3] = 0;
-		argsBuffer.SetData(args);
+		shader.SetBuffer(_kernelDirect, "iso", isoBuffer);
+		shader.SetBuffer(_kernelDirect, "indices", indexBuffer);
+		shader.SetBuffer(_kernelDirect, "vertices", vertexBuffer);
+		shader.SetBuffer(_kernelDirect, "quads", quadBuffer);
 
-		indexBuffer = new ComputeBuffer(pointCount, sizeof(int), ComputeBufferType.Counter);
-
-		triangleBuffer = new ComputeBuffer(voxelCount * 2, 3 * sizeof(int), ComputeBufferType.Append);
+		shader.SetBuffer(_kernelIndirect, "iso", isoBuffer);
+		shader.SetBuffer(_kernelIndirect, "indices", indexBuffer);
+		shader.SetBuffer(_kernelIndirect, "quads", quadBuffer);
 	}
 
 	void ReleaseBuffers()
@@ -108,35 +109,75 @@ public class CSContourGenerator : MonoBehaviour
 		if (indexBuffer != null)
 			indexBuffer.Release();
 
-		if (triangleBuffer != null)
-			triangleBuffer.Release();
+		if (vertexBuffer != null)
+			vertexBuffer.Release();
 
-		if (argsBuffer != null)
-			argsBuffer.Release();
+		if (quadBuffer != null)
+			quadBuffer.Release();
 
+		if (quadCountBuffer != null)
+			quadCountBuffer.Release();
+
+		if (vertexCountBuffer != null)
+			vertexCountBuffer.Release();
 
 		isoBuffer = null;
 		indexBuffer = null;
-		triangleBuffer = null;
-		argsBuffer = null;
+		vertexBuffer = null;
+		quadBuffer = null;
+		quadCountBuffer = null;
+		vertexCountBuffer = null;
 	}
 
 	void Generate(Array3<IsoPoint> iso)
 	{
+
+		Vector3Int ts = new Vector3Int(
+				Mathf.CeilToInt(size.x / _threadSizeX - 1), 
+				Mathf.CeilToInt(size.y / _threadSizeY - 1), 
+				Mathf.CeilToInt(size.z / _threadSizeZ - 1));
+
 		shader.SetInts("sizeAxes", new int[] { size.x, size.y, size.z });
 		shader.SetFloat("maxCornerDistance", maxCornerDistance);
 		shader.SetFloat("centerBias", centerBias);
 
 		isoBuffer.SetData(iso.Data);
 
-		triangleBuffer.SetCounterValue(0);
+		quadBuffer.SetCounterValue(0);
+		vertexBuffer.SetCounterValue(0);
 		indexBuffer.SetCounterValue(0);
 
-		//shader.Dispatch(_kernelDirect, 
-		//		Mathf.CeilToInt(size.x / _threadSizeX), 
-		//		Mathf.CeilToInt(size.y / _threadSizeY), 
-		//		Mathf.CeilToInt(size.z / _threadSizeZ)
-		//		);
+		shader.Dispatch(_kernelDirect, ts.x, ts.y, ts.z);
+		shader.Dispatch(_kernelIndirect, ts.x, ts.y, ts.z);
 
+		Vector3[] vertices = new Vector3[vertexBuffer.count];
+
+		ComputeBuffer.CopyCount(quadBuffer, quadCountBuffer, 0);
+		int[] quadCountArray = { 0 };
+		quadCountBuffer.GetData(quadCountArray);
+		int quadCount = quadCountArray[0];
+		
+		ComputeBuffer.CopyCount(vertexBuffer, vertexCountBuffer, 0);
+		int[] vertexCountArray = { 0 };
+		vertexCountBuffer.GetData(vertexCountArray);
+		int vertexCount = vertexCountArray[0];
+
+		int[] triangles = new int[2 * 3 * quadCount];
+		Vector3[] verts = new Vector3[vertexCount];
+
+		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles", vertexCount, quadCount / (3 * 2)));
+
+		quadBuffer.GetData(triangles);
+		vertexBuffer.GetData(verts);
+
+		float chkSum = 0;
+		for (int i = 0; i < vertexCount; i++)
+			chkSum += (verts[i].x + verts[i].y + verts[i].z);	
+
+		Debug.Log(string.Format("CS: Checksum: {0}", chkSum));
+
+		//contour.vertices = verts;
+		//contour.triangles = triangles;
+		//contour.RecalculateNormals();
 	}
 }

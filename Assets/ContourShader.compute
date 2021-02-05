@@ -1,5 +1,4 @@
-﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMakeVerticesDirect
+﻿#pragma kernel CSMakeVerticesDirect
 #pragma kernel CSMakeTrianglesIndirect
 
 static const int xyNumThreads = 8;
@@ -15,6 +14,12 @@ struct IsoPoint
 {
 	float dist;
 	float3 normal;
+};
+
+struct Quad 
+{
+	int3 t0;
+	int3 t1;
 };
 
 static uint3 corners[numCorners] = 
@@ -72,7 +77,7 @@ static int3 neighbours[numNeighbours] =
 RWStructuredBuffer<IsoPoint> iso;
 RWStructuredBuffer<int> indices;
 AppendStructuredBuffer<float3> vertices;
-AppendStructuredBuffer<int3> triangles;
+AppendStructuredBuffer<Quad> quads;
 
 int3 sizeAxes;
 float maxCornerDistance;
@@ -80,7 +85,7 @@ float centerBias;
 
 int getIndexFromId(int3 id)
 {
-	return ((id.x * sizeAxes.y) + id.y) * sizeAxes.x + id.x;
+	return ((id.z * sizeAxes.y) + id.y) * sizeAxes.x + id.x;
 }
 
 bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
@@ -164,7 +169,7 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	if (numInside == 0 || numInside == numCorners)
 		return;
 
-	bool crossingCorners[numCorners];
+	bool crossingCorners[numCorners] = { false, false, false, false, false, false, false, false };
 
 	for (int e = 0; e < numEdges; e++)
 	{
@@ -181,7 +186,6 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 
 	int pointCount = 0;
 
-	// if somethings is broken, check here for ci
 	for (int cj = 0; cj < numCorners; cj++)
 	{
 		uint3 n_pos = id + corners[cj];
@@ -231,6 +235,7 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 [numthreads(xyNumThreads, xyNumThreads, 1)]
 void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
 {
+
 	int v0 = indices[getIndexFromId(id)];
 	
 	if (v0 < 0)
@@ -272,15 +277,18 @@ void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
 		if (v1 < 0 || v2 < 0 || v3 < 0)
 			continue;
 
+		Quad q;
 		if (inside[edge.x] == (ai == 1))
 		{
-			triangles.Append(int3(v0,v1,v3));
-			triangles.Append(int3(v0,v3,v2));
+			q.t0 = int3(v0,v1,v3);
+			q.t1 = int3(v0,v3,v2);
 		}
 		else
 		{
-			triangles.Append(int3(v0,v3,v1));
-			triangles.Append(int3(v0,v2,v3));
+			q.t0 = int3(v0,v3,v1);
+			q.t1 = int3(v0,v2,v3);
 		}
+
+		quads.Append(q);
 	}
 }

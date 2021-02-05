@@ -11,11 +11,9 @@ public class Generator
 			Vector3 vec = pos - center;
 			float d = vec.magnitude - rad;
 
-			if (d < point.Dist)
-			{
-				point.Dist = d;
-				point.Normal = vec.normalized;
-			}
+			if (d < point.dist)
+				field[pos] = new IsoPoint(d, vec.normalized);
+
 		});
 	}
 
@@ -28,11 +26,9 @@ public class Generator
 			Vector3 vec = pos - center;
 			float d = vec.magnitude - rad;
 
-			if (-d > point.Dist)
-			{
-				point.Dist = -d;
-				point.Normal = -vec.normalized;
-			}
+			if (-d > point.dist)
+				field[pos] = new IsoPoint(-d, -vec.normalized);
+
 		});
 	}
 
@@ -44,11 +40,9 @@ public class Generator
 			var vec = new Vector2(pos.x, pos.y) - center;
 			float d = vec.magnitude - rad;
 
-			if (d < point.Dist)
-			{
-				point.Dist = d;
-				point.Normal = vec.normalized;
-			}
+			if (d < point.dist)
+				field[pos] = new IsoPoint(d, vec.normalized);
+
 		});
 	}
 
@@ -60,11 +54,9 @@ public class Generator
 			var vec = new Vector2(pos.x, pos.y) - center;
 			float d = vec.magnitude - rad;
 
-			if (-d > point.Dist)
-			{
-				point.Dist = -d;
-				point.Normal = -vec.normalized;
-			}
+			if (-d > point.dist)
+				field[pos] = new IsoPoint(-d, -vec.normalized);
+
 		});
 	}
 }
