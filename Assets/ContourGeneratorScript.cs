@@ -95,11 +95,15 @@ public class ContourGeneratorScript : MonoBehaviour
 		contour.vertices = mesh.vertices.ToArray(); // fix -- we shouldn't need to convert
 		contour.triangles = mesh.triangles.ToArray();
 
-		float chkSum = 0;
+		float chkSumA = 0;
+		int chkSumB = 0;
 		foreach (var vertex in mesh.vertices)
-			chkSum += (vertex.x + vertex.y + vertex.z);	
+			chkSumA += (vertex.x + vertex.y + vertex.z);	
 
-		Debug.Log(string.Format("Checksum: {0}", chkSum));
+		foreach (var index in mesh.triangles)
+			chkSumB += index;
+
+		Debug.Log(string.Format("Checksum: {0} / {1}", chkSumA, chkSumB));
 
 		contour.RecalculateNormals();
     }
@@ -228,9 +232,9 @@ public class ContourGeneratorScript : MonoBehaviour
 	static Vector3Int d0 = new Vector3Int(0,0,1);
 	static Vector3Int d1 = new Vector3Int(0,1,0);
 	static Vector3Int d2 = new Vector3Int(0,1,1);
-	static Vector3Int d4 = new Vector3Int(1,0,0);
-	static Vector3Int d5 = new Vector3Int(1,0,1);
-	static Vector3Int d6 = new Vector3Int(1,1,0);
+	static Vector3Int d3 = new Vector3Int(1,0,0);
+	static Vector3Int d4 = new Vector3Int(1,0,1);
+	static Vector3Int d5 = new Vector3Int(1,1,0);
 
 	void BuildTriangles(Array3<IsoPoint> iso, VoxelMesh mesh)
 	{
@@ -265,13 +269,13 @@ public class ContourGeneratorScript : MonoBehaviour
 						break;
 					case 1:
 						v1 = mesh.voxels[pos + d0];
-						v2 = mesh.voxels[pos + d4];
-						v3 = mesh.voxels[pos + d5];
+						v2 = mesh.voxels[pos + d3];
+						v3 = mesh.voxels[pos + d4];
 						break;
 					default:
 						v1 = mesh.voxels[pos + d1];
-						v2 = mesh.voxels[pos + d4];
-						v3 = mesh.voxels[pos + d6];
+						v2 = mesh.voxels[pos + d3];
+						v3 = mesh.voxels[pos + d5];
 						break;
 				}
 

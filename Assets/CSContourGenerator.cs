@@ -87,7 +87,7 @@ public class CSContourGenerator : MonoBehaviour
 		isoBuffer = new ComputeBuffer(pointCount, 4 * sizeof(float));
 		indexBuffer = new ComputeBuffer(indexCount, sizeof(int), ComputeBufferType.Counter);
 		vertexBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float), ComputeBufferType.Append);
-		quadBuffer = new ComputeBuffer(indexCount, 2 * 3 * sizeof(int), ComputeBufferType.Append);
+		quadBuffer = new ComputeBuffer(indexCount * 3, 2 * 3 * sizeof(int), ComputeBufferType.Append);
 		quadCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 		vertexCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 
@@ -133,9 +133,9 @@ public class CSContourGenerator : MonoBehaviour
 	{
 
 		Vector3Int ts = new Vector3Int(
-				Mathf.CeilToInt(size.x / _threadSizeX - 1), 
-				Mathf.CeilToInt(size.y / _threadSizeY - 1), 
-				Mathf.CeilToInt(size.z / _threadSizeZ - 1));
+				Mathf.FloorToInt(size.x / _threadSizeX), 
+				Mathf.FloorToInt(size.y / _threadSizeY), 
+				Mathf.FloorToInt(size.z / _threadSizeZ));
 
 		shader.SetInts("sizeAxes", new int[] { size.x, size.y, size.z });
 		shader.SetFloat("maxCornerDistance", maxCornerDistance);
@@ -165,19 +165,24 @@ public class CSContourGenerator : MonoBehaviour
 		int[] triangles = new int[2 * 3 * quadCount];
 		Vector3[] verts = new Vector3[vertexCount];
 
-		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles", vertexCount, quadCount / (3 * 2)));
+		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles", vertexCount, quadCount * 2));
 
 		quadBuffer.GetData(triangles);
 		vertexBuffer.GetData(verts);
 
-		float chkSum = 0;
+		float chkSumA = 0;
+		int chkSumB = 0;
+
 		for (int i = 0; i < vertexCount; i++)
-			chkSum += (verts[i].x + verts[i].y + verts[i].z);	
+			chkSumA += (verts[i].x + verts[i].y + verts[i].z);	
 
-		Debug.Log(string.Format("CS: Checksum: {0}", chkSum));
+		for (int j = 0; j < quadCount * 2 * 3; j++)
+			chkSumB += triangles[j];
 
-		//contour.vertices = verts;
-		//contour.triangles = triangles;
-		//contour.RecalculateNormals();
+		Debug.Log(string.Format("CS: Checksum: {0} / {1}", chkSumA, chkSumB));
+
+		contour.vertices = verts;
+		contour.triangles = triangles;
+		contour.RecalculateNormals();
 	}
 }

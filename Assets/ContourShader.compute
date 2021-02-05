@@ -153,6 +153,9 @@ bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out flo
 void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 {
 
+	if (id.x >= sizeAxes.x - 1 || id.y >= sizeAxes.y - 1 || id.z >= sizeAxes.z - 1)
+		return;
+
 	bool inside[numCorners];
 	int numInside = 0;
 
@@ -236,12 +239,15 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
 {
 
+	if (id.x >= sizeAxes.x - 1 || id.y >= sizeAxes.y - 1 || id.z >= sizeAxes.z - 1)
+		return;
+
 	int v0 = indices[getIndexFromId(id)];
 	
 	if (v0 < 0)
 		return;
 
-	bool inside[numCorners];
+	bool inside[numCorners] = { false, false, false, false, false, false, false, false };
 
 	for (int ci = 0; ci < numCorners; ci++)
 		inside[ci] = (iso[getIndexFromId(id + corners[ci])].dist <= 0);
@@ -254,41 +260,42 @@ void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
 			continue;
 
 		int v1, v2, v3;
-
-		switch (ai)
+		
+		if (ai == 0)
 		{
-			case 0:
-				v1 = indices[getIndexFromId(id + neighbours[0])];
-				v2 = indices[getIndexFromId(id + neighbours[1])];
-				v3 = indices[getIndexFromId(id + neighbours[2])];
-				break;
-			case 1:
-				v1 = indices[getIndexFromId(id + neighbours[0])];
-				v2 = indices[getIndexFromId(id + neighbours[3])];
-				v3 = indices[getIndexFromId(id + neighbours[4])];
-				break;
-			default:
-				v1 = indices[getIndexFromId(id + neighbours[1])];
-				v2 = indices[getIndexFromId(id + neighbours[3])];
-				v3 = indices[getIndexFromId(id + neighbours[5])];
-				break;
+			v1 = indices[getIndexFromId(id + neighbours[0])];
+			v2 = indices[getIndexFromId(id + neighbours[1])];
+			v3 = indices[getIndexFromId(id + neighbours[2])];
+		}
+		else if (ai == 1)
+		{
+			v1 = indices[getIndexFromId(id + neighbours[0])];
+			v2 = indices[getIndexFromId(id + neighbours[3])];
+			v3 = indices[getIndexFromId(id + neighbours[4])];
+		}
+		else 
+		{
+			v1 = indices[getIndexFromId(id + neighbours[1])];
+			v2 = indices[getIndexFromId(id + neighbours[3])];
+			v3 = indices[getIndexFromId(id + neighbours[5])];
 		}
 
 		if (v1 < 0 || v2 < 0 || v3 < 0)
 			continue;
 
-		Quad q;
 		if (inside[edge.x] == (ai == 1))
 		{
-			q.t0 = int3(v0,v1,v3);
-			q.t1 = int3(v0,v3,v2);
+			Quad q1;
+			q1.t0 = int3(v0,v1,v3);
+			q1.t1 = int3(v0,v3,v2);
+			quads.Append(q1);
 		}
 		else
 		{
-			q.t0 = int3(v0,v3,v1);
-			q.t1 = int3(v0,v2,v3);
+			Quad q2;
+			q2.t0 = int3(v0,v3,v1);
+			q2.t1 = int3(v0,v2,v3);
+			quads.Append(q2);
 		}
-
-		quads.Append(q);
 	}
 }
