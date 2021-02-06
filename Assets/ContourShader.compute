@@ -152,6 +152,7 @@ bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out flo
 [numthreads(xyNumThreads, xyNumThreads, 1)]
 void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 {
+
 	int index = getIndexFromId(id);
 	indices[index] = -1;
 

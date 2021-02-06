@@ -102,17 +102,20 @@ public class ContourGeneratorScript : MonoBehaviour
 
 		float chkSumA = 0;
 		int chkSumB = 0;
+		int chkSumC = 0;
 		foreach (var vertex in mesh.vertices)
-			chkSumA += (vertex.x + vertex.y + vertex.z);	
+			chkSumA += (vertex.x + vertex.y + vertex.z);
 
-		foreach (var index in mesh.triangles)
+		foreach (var index in mesh.voxels.Data)
 			chkSumB += index;
 
-		Debug.Log(string.Format("Checksum: {0} / {1}", chkSumA, chkSumB));
+		foreach (var index in mesh.triangles)
+			chkSumC += index;
+
+		Debug.Log(string.Format("CS: Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
 
 		Debug.Log("CPU:");
 		Debug.Log(string.Join(", ", mesh.voxels.Data));
-
 		Debug.Log(string.Join(", ", mesh.triangles));
 
 		contour.RecalculateNormals();

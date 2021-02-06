@@ -176,9 +176,8 @@ public class CSContourGenerator : MonoBehaviour
 		vertexBuffer.GetData(verts);
 
 		Debug.Log("GPU:");
-		var kuk = new int[indexCount];
-		indexBuffer.GetData(kuk);
-		Debug.Log(string.Join(", ", kuk));
+		var inds = new int[indexCount];
+		indexBuffer.GetData(inds);
 
 		var t1 = Time.realtimeSinceStartup;
 		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles in {2} seconds", 
@@ -186,14 +185,19 @@ public class CSContourGenerator : MonoBehaviour
 
 		float chkSumA = 0;
 		int chkSumB = 0;
+		int chkSumC = 0;
 
 		for (int i = 0; i < vertexCount; i++)
-			chkSumA += (verts[i].x + verts[i].y + verts[i].z);	
+			chkSumA += (verts[i].x + verts[i].y + verts[i].z);
+
+		for (int j = 0; j < indexCount; j++)
+			chkSumB += inds[j];
 
 		for (int j = 0; j < quadCount * 2 * 3; j++)
-			chkSumB += triangles[j];
+			chkSumC += triangles[j];
 
-		Debug.Log(string.Format("CS: Checksum: {0} / {1}", chkSumA, chkSumB));
+		Debug.Log(string.Format("CS: Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
+		Debug.Log(string.Join(", ", inds));
 		Debug.Log(string.Join(", ", triangles));
 
 		contour.vertices = verts;
