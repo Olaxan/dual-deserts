@@ -33,6 +33,7 @@ public class CSContourGenerator : MonoBehaviour
     {
 		Setup();
 
+		var t0 = Time.realtimeSinceStartup;
 		var iso = new Array3<IsoPoint>(size);
 		iso.ForEach3( (Vector3Int pos) => { iso[pos] = new IsoPoint(float.MaxValue, Vector3.zero); } );
 
@@ -42,6 +43,9 @@ public class CSContourGenerator : MonoBehaviour
 		Generator.AddSphere(iso, center, rad);
 		Generator.RemoveCylinder(iso, new Vector2(center.x, center.y), rad / 3);
 		Generator.RemoveSphere(iso, center * 1.2f, rad);
+
+		var t1 = Time.realtimeSinceStartup;
+		Debug.Log(string.Format("CS: Made ISO in {0} seconds", t1 - t0));
 
 		SetupBuffers();
     	Generate(iso);    
@@ -86,8 +90,8 @@ public class CSContourGenerator : MonoBehaviour
 
 		// Create buffer for isosurface on shader !!! POSSIBLE PACK ISSUES !!!
 		isoBuffer = new ComputeBuffer(pointCount, 4 * sizeof(float));
-		indexBuffer = new ComputeBuffer(indexCount, sizeof(int), ComputeBufferType.Counter);
-		vertexBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float), ComputeBufferType.Append);
+		indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
+		vertexBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float), ComputeBufferType.Counter);
 		quadBuffer = new ComputeBuffer(indexCount * 3, 2 * 3 * sizeof(int), ComputeBufferType.Append);
 		quadCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 		vertexCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
@@ -197,8 +201,8 @@ public class CSContourGenerator : MonoBehaviour
 			chkSumC += triangles[j];
 
 		Debug.Log(string.Format("CS: Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
-		Debug.Log(string.Join(", ", inds));
-		Debug.Log(string.Join(", ", triangles));
+		//Debug.Log(string.Join(", ", inds));
+		//Debug.Log(string.Join(", ", triangles));
 
 		contour.vertices = verts;
 		contour.triangles = triangles;

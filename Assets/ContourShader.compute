@@ -76,7 +76,7 @@ static int3 neighbours[numNeighbours] =
 
 RWStructuredBuffer<IsoPoint> iso;
 RWStructuredBuffer<int> indices;
-AppendStructuredBuffer<float3> vertices;
+RWStructuredBuffer<float3> vertices;
 AppendStructuredBuffer<Quad> quads;
 
 int3 sizeAxes;
@@ -224,15 +224,16 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	}
 
 	float3 vertex;
-	//if (SolveError(pointCount, A, b, vertex))
-	//{
-	//	// clamp and coax
-	//}
-	//else 
+	if (SolveError(pointCount, A, b, vertex))
+	{
+		// clamp and coax
+	}
+	else 
 		vertex = voxelCenter;
 
-	indices[index] = indices.IncrementCounter();
-	vertices.Append(vertex);
+	int idx = vertices.IncrementCounter();
+	vertices[idx] = vertex;
+	indices[index] = idx;
 }
 
 [numthreads(xyNumThreads, xyNumThreads, 1)]
