@@ -423,7 +423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1396e9efc4ff3647d9c895a0df86a9df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 64, y: 64, z: 64}
+  size: {x: 16, y: 16, z: 16}
   maxCornerDistance: 1
   pushSize: 0.5
 --- !u!23 &1805263437

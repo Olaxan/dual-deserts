@@ -116,11 +116,7 @@ public class ContourGeneratorScript : MonoBehaviour
 		foreach (var index in mesh.triangles)
 			chkSumC += index;
 
-		Debug.Log(string.Format("CS: Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
-
-		Debug.Log("CPU:");
-		//Debug.Log(string.Join(", ", mesh.voxels.Data));
-		//Debug.Log(string.Join(", ", mesh.triangles));
+		Debug.Log(string.Format("Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
 
 		contour.RecalculateNormals();
     }
@@ -220,15 +216,15 @@ public class ContourGeneratorScript : MonoBehaviour
 			}
 
 			Vector3 vertex;
-			if (Solver.LeastSquares(normals, dists, out vertex))
-			{
-				//vertex = new Vector3(
-				//		Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
-				//		Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
-				//		Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
-				//	);
-			}
-			else
+			//if (Solver.LeastSquares(normals, dists, out vertex))
+			//{
+			//	vertex = new Vector3(
+			//			Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
+			//			Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
+			//			Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
+			//		);
+			//}
+			//else
 				vertex = voxelCenter;
 
 

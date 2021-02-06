@@ -201,8 +201,6 @@ public class CSContourGenerator : MonoBehaviour
 			chkSumC += triangles[j];
 
 		Debug.Log(string.Format("CS: Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
-		//Debug.Log(string.Join(", ", inds));
-		//Debug.Log(string.Join(", ", triangles));
 
 		contour.vertices = verts;
 		contour.triangles = triangles;

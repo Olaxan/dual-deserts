@@ -224,11 +224,11 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 	}
 
 	float3 vertex;
-	if (SolveError(pointCount, A, b, vertex))
-	{
-		// clamp and coax
-	}
-	else 
+	//if (SolveError(pointCount, A, b, vertex))
+	//{
+	//	vertex = clamp(vertex, float3(id), float3(id + uint3(1, 1, 1)));
+	//}
+	//else 
 		vertex = voxelCenter;
 
 	int idx = vertices.IncrementCounter();
@@ -245,7 +245,7 @@ void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
 
 	int v0 = indices[getIndexFromId(id)];
 	
-	if (v0 < 0)
+	if (v0 == -1)
 		return;
 
 	bool inside[numCorners] = { false, false, false, false, false, false, false, false };
