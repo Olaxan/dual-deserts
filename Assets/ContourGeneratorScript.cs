@@ -74,8 +74,6 @@ public class ContourGeneratorScript : MonoBehaviour
 
 		Setup();
 
-		var t0 = Time.realtimeSinceStartup;
-
 		var iso = new Array3<IsoPoint>(size);
 		var mesh = new VoxelMesh(size);
 
@@ -86,37 +84,19 @@ public class ContourGeneratorScript : MonoBehaviour
 		float rad = size.x * 3.5f / 16.0f;
 
 		Generator.AddSphere(iso, center, rad);
-		Generator.RemoveCylinder(iso, new Vector2(center.x, center.y), rad / 3);
-		Generator.RemoveSphere(iso, center * 1.2f, rad);
 
-		var t1 = Time.realtimeSinceStartup;
-
-		Debug.Log(string.Format("Made ISO in {0} seconds", t1 - t0));
+		var t0 = Time.realtimeSinceStartup;
 
 		BuildVertices(iso, mesh);
 		BuildTriangles(iso, mesh);
 
-		var t2 = Time.realtimeSinceStartup;
+		var t1 = Time.realtimeSinceStartup;
 
-		Debug.Log(string.Format("Created {0} vertices, {1} triangles in {2} seconds", 
-					mesh.vertices.Count, mesh.triangles.Count / 3, t2 - t1)); 
+		Debug.Log(string.Format("Created {0} vertices, {1} triangles, {2} indices in {3} seconds", 
+					mesh.vertices.Count, mesh.triangles.Count / 3, mesh.voxels.Count, t1 - t0)); 
 
 		contour.vertices = mesh.vertices.ToArray(); // fix -- we shouldn't need to convert
 		contour.triangles = mesh.triangles.ToArray();
-
-		float chkSumA = 0;
-		int chkSumB = 0;
-		int chkSumC = 0;
-		foreach (var vertex in mesh.vertices)
-			chkSumA += (vertex.x + vertex.y + vertex.z);
-
-		foreach (var index in mesh.voxels.Data)
-			chkSumB += index;
-
-		foreach (var index in mesh.triangles)
-			chkSumC += index;
-
-		Debug.Log(string.Format("Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
 
 		contour.RecalculateNormals();
     }
@@ -216,15 +196,15 @@ public class ContourGeneratorScript : MonoBehaviour
 			}
 
 			Vector3 vertex;
-			//if (Solver.LeastSquares(normals, dists, out vertex))
-			//{
-			//	vertex = new Vector3(
-			//			Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
-			//			Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
-			//			Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
-			//		);
-			//}
-			//else
+			if (Solver.LeastSquares(normals, dists, out vertex))
+			{
+				vertex = new Vector3(
+						Mathf.Clamp(vertex.x, pos.x, pos.x + 1),
+						Mathf.Clamp(vertex.y, pos.y, pos.y + 1),
+						Mathf.Clamp(vertex.z, pos.z, pos.z + 1)
+					);
+			}
+			else
 				vertex = voxelCenter;
 
 

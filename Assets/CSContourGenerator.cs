@@ -28,34 +28,34 @@ public class CSContourGenerator : MonoBehaviour
 	uint _threadSizeY;
 	uint _threadSizeZ;
 
+	Array3<IsoPoint> iso;
+
     // Start is called before the first frame update
     void Start()
     {
 		Setup();
 
-		var t0 = Time.realtimeSinceStartup;
-		var iso = new Array3<IsoPoint>(size);
+		iso = new Array3<IsoPoint>(size);
 		iso.ForEach3( (Vector3Int pos) => { iso[pos] = new IsoPoint(float.MaxValue, Vector3.zero); } );
-
 		var center = (Vector3)size * 0.5f + new Vector3(0, 0, size.z) * 2.0f / 16.0f;
 		float rad = size.x * 3.5f / 16.0f;
 
 		Generator.AddSphere(iso, center, rad);
-		Generator.RemoveCylinder(iso, new Vector2(center.x, center.y), rad / 3);
-		Generator.RemoveSphere(iso, center * 1.2f, rad);
-
-		var t1 = Time.realtimeSinceStartup;
-		Debug.Log(string.Format("CS: Made ISO in {0} seconds", t1 - t0));
 
 		SetupBuffers();
     	Generate(iso);    
-		ReleaseBuffers();
+		
     }
 
 	//void OnEnable()
 	//{
 	//	SetupBuffers();
 	//}
+
+	void OnDestroy()
+	{
+		ReleaseBuffers();
+	}
 
 	void Setup()
 	{
@@ -161,8 +161,6 @@ public class CSContourGenerator : MonoBehaviour
 		shader.Dispatch(_kernelDirect, ts.x, ts.y, ts.z);
 		shader.Dispatch(_kernelIndirect, ts.x, ts.y, ts.z);
 
-		Vector3[] vertices = new Vector3[vertexBuffer.count];
-
 		ComputeBuffer.CopyCount(quadBuffer, quadCountBuffer, 0);
 		int[] quadCountArray = { 0 };
 		quadCountBuffer.GetData(quadCountArray);
@@ -173,36 +171,17 @@ public class CSContourGenerator : MonoBehaviour
 		vertexCountBuffer.GetData(vertexCountArray);
 		int vertexCount = vertexCountArray[0];
 
+		Vector3[] vertices = new Vector3[vertexCount];
 		int[] triangles = new int[2 * 3 * quadCount];
-		Vector3[] verts = new Vector3[vertexCount];
 
 		quadBuffer.GetData(triangles);
-		vertexBuffer.GetData(verts);
-
-		Debug.Log("GPU:");
-		var inds = new int[indexCount];
-		indexBuffer.GetData(inds);
+		vertexBuffer.GetData(vertices);
 
 		var t1 = Time.realtimeSinceStartup;
-		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles in {2} seconds", 
-			vertexCount, quadCount * 2, t1 - t0));
+		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles, {2} indices in {3} seconds", 
+			vertexCount, quadCount * 2, indexCount, t1 - t0));
 
-		float chkSumA = 0;
-		int chkSumB = 0;
-		int chkSumC = 0;
-
-		for (int i = 0; i < vertexCount; i++)
-			chkSumA += (verts[i].x + verts[i].y + verts[i].z);
-
-		for (int j = 0; j < indexCount; j++)
-			chkSumB += inds[j];
-
-		for (int j = 0; j < quadCount * 2 * 3; j++)
-			chkSumC += triangles[j];
-
-		Debug.Log(string.Format("CS: Checksum: {0} / {1} / {2}", chkSumA, chkSumB, chkSumC));
-
-		contour.vertices = verts;
+		contour.vertices = vertices;
 		contour.triangles = triangles;
 		contour.RecalculateNormals();
 	}
