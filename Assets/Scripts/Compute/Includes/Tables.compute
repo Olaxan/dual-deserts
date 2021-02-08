@@ -17,11 +17,11 @@ static uint3 corners[numCorners] =
 	uint3(1,1,1)
 };
 
-static uint3 axes[numAxes] = 
+static int3 axes[numAxes] = 
 {
-	uint3(1,0,0),
-	uint3(0,1,0),
-	uint3(0,0,1)
+	int3(1,0,0),
+	int3(0,1,0),
+	int3(0,0,1)
 };
 
 static uint2 edges[numEdges] = 
