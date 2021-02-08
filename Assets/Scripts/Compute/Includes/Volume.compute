@@ -17,3 +17,8 @@ bool isEdge(int3 id)
 {
 	return (id.x >= isoSize.x - 1 || id.y >= isoSize.y - 1 || id.z >= isoSize.z - 1);
 }
+
+bool isBorder(int3 id)
+{
+	return (id.x * id.y * id.z == 0) || isEdge(id);
+}

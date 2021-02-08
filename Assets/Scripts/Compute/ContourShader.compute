@@ -177,6 +177,9 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 void CSMakeTriangles(uint3 id : SV_DispatchThreadID)
 {
 
+	//if (isBorder(id) && iso[getVolumeIndex(id)].dist <= 0)
+	//	return;
+
 	if (isEdge(id))
 		return;
 
