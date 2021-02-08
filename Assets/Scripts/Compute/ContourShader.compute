@@ -1,20 +1,10 @@
-﻿#pragma kernel CSMakeVerticesDirect
-#pragma kernel CSMakeTrianglesIndirect
+﻿#pragma kernel CSMakeVertices
+#pragma kernel CSMakeTriangles
+
+#include "/Includes/Volume.compute"
+#include "/Includes/Tables.compute"
 
 static const int xyNumThreads = 8;
-
-static const int numCorners = 8;
-static const int numAxes = 3;
-static const int numEdges = 12;
-static const int numFarEdges = 3;
-static const int numNeighbours = 6;
-static const int numPoints = numCorners + numAxes;
-
-struct IsoPoint
-{
-	float dist;
-	float3 normal;
-};
 
 struct Quad 
 {
@@ -22,75 +12,17 @@ struct Quad
 	int3 t1;
 };
 
-static uint3 corners[numCorners] = 
-{
-	uint3(0,0,0),
-	uint3(0,0,1),
-	uint3(0,1,0),
-	uint3(0,1,1),
-	uint3(1,0,0),
-	uint3(1,0,1),
-	uint3(1,1,0),
-	uint3(1,1,1)
-};
-
-static uint3 axes[numAxes] = 
-{
-	uint3(1,0,0),
-	uint3(0,1,0),
-	uint3(0,0,1)
-};
-
-static uint2 edges[numEdges] = 
-{
-	uint2(0,1),
-	uint2(0,2),
-	uint2(0,4),
-	uint2(1,3),
-	uint2(1,5),
-	uint2(2,3),
-	uint2(2,6),
-	uint2(3,7),
-	uint2(4,5),
-	uint2(4,6),
-	uint2(5,7),
-	uint2(6,7)
-};
-
-static uint2 farEdges[numFarEdges] = 
-{
-	uint2(3,7),
-	uint2(5,7),
-	uint2(6,7)
-};
-
-static int3 neighbours[numNeighbours] = 
-{
-	int3(0,0,1),
-	int3(0,1,0),
-	int3(0,1,1),
-	int3(1,0,0),
-	int3(1,0,1),
-	int3(1,1,0)
-};
-
-RWStructuredBuffer<IsoPoint> iso;
 RWStructuredBuffer<int> indices;
 RWStructuredBuffer<float3> vertices;
 AppendStructuredBuffer<Quad> quads;
 
-int3 sizeAxes;
+int LOD;
 float maxCornerDistance;
 float centerBias;
 
-int getVolumeIndex(int3 id)
-{
-	return ((id.z * sizeAxes.y) + id.y) * sizeAxes.x + id.x;
-}
-
 int getVoxelIndex(int3 id)
 {
-	return ((id.z * (sizeAxes.y - 1)) + id.y) * (sizeAxes.x - 1) + id.x;
+	return ((id.z * (isoSize.y - 1)) + id.y) * (isoSize.x - 1) + id.x;
 }
 
 bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
@@ -155,10 +87,10 @@ bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out flo
 }
 
 [numthreads(xyNumThreads, xyNumThreads, 1)]
-void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
+void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 {
 
-	if (id.x >= (uint)sizeAxes.x - 1 || id.y >= (uint)sizeAxes.y - 1 || id.z >= (uint)sizeAxes.z - 1)
+	if (isEdge(id))
 		return;
 
 	int index = getVoxelIndex(id);
@@ -242,10 +174,10 @@ void CSMakeVerticesDirect(uint3 id : SV_DispatchThreadID)
 }
 
 [numthreads(xyNumThreads, xyNumThreads, 1)]
-void CSMakeTrianglesIndirect(uint3 id : SV_DispatchThreadID)
+void CSMakeTriangles(uint3 id : SV_DispatchThreadID)
 {
 
-	if (id.x >= (uint)sizeAxes.x - 1 || id.y >= (uint)sizeAxes.y - 1 || id.z >= (uint)sizeAxes.z - 1)
+	if (isEdge(id))
 		return;
 
 	int v0 = indices[getVoxelIndex(id)];

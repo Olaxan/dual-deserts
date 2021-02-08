@@ -132,9 +132,10 @@ GameObject:
   - component: {fileID: 695777392}
   - component: {fileID: 695777395}
   - component: {fileID: 695777394}
+  - component: {fileID: 695777396}
   - component: {fileID: 695777393}
   m_Layer: 0
-  m_Name: CSContour
+  m_Name: ChunkBuilder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -166,9 +167,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50012ccb2d56a9544ae85d2e1dad423c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shader: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  size: {x: 128, y: 128, z: 128}
-  centerBias: 0.2
+  contourGenerator: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
+  size: {x: 32, y: 32, z: 32}
+  centerBias: 0.25
   maxCornerDistance: 1
 --- !u!23 &695777394
 MeshRenderer:
@@ -188,7 +189,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a08c59225a0863c97ab43ba8098b8622, type: 2}
+  - {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -217,6 +218,20 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 695777391}
   m_Mesh: {fileID: 0}
+--- !u!114 &695777396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 695777391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f58e1f6c3fb75d5f1b4c11327164a80c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
+  floorLevel: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

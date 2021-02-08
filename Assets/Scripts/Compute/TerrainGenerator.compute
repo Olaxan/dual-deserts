@@ -1,0 +1,28 @@
+﻿#pragma kernel CSGenerator
+
+#include "/Includes/Volume.compute"
+
+int3 chunkOffset;
+
+float floorLevel;
+
+[numthreads(8,8,1)]
+void CSGenerator(uint3 id : SV_DispatchThreadID)
+{
+	int index = getVolumeIndex(id);
+
+	float3 center = float3(isoSize) * 0.5 + float3(0,0,isoSize.z) * 2.0 / 16.0;
+	float rad = float(isoSize.x) * 3.5 / 16.0;
+
+	float3 vec = float3(id) - center;
+	float d = length(vec) - rad;
+
+	IsoPoint p;
+	p.dist = d;
+	p.normal = normalize(vec);
+
+	//p.dist = floorLevel - float(id.y);
+	//p.normal = normalize(float3(0, p.dist, 0));
+
+	iso[index] = p;
+}

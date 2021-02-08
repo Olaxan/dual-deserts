@@ -1,0 +1,49 @@
+﻿using UnityEngine;
+
+public class CSGenerator : MonoBehaviour
+{
+
+	public ComputeShader terrainShader;
+
+	[Header("Terrain Settings")]
+	public float floorLevel;
+
+	int _generatorKernel;
+	uint _threadSizeX;
+	uint _threadSizeY;
+	uint _threadSizeZ;
+
+    void Awake()
+    {
+      	Setup();  
+    }
+
+	void Setup()
+	{
+		_generatorKernel = terrainShader.FindKernel("CSGenerator");
+		terrainShader.GetKernelThreadGroupSizes(_generatorKernel,
+				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
+	}
+
+	public void Generate(ComputeBuffer isoBuffer, Vector3Int size, Vector3Int chunk)
+	{
+		var t0 = Time.realtimeSinceStartup;
+
+		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
+		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
+		terrainShader.SetFloat("floorLevel", floorLevel);
+
+		terrainShader.SetBuffer(_generatorKernel, "iso", isoBuffer);
+
+		Vector3Int ts = new Vector3Int(
+				Mathf.CeilToInt(size.x / _threadSizeX), 
+				Mathf.CeilToInt(size.y / _threadSizeY), 
+				Mathf.CeilToInt(size.z / _threadSizeZ));
+
+		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
+
+		var t1 = Time.realtimeSinceStartup;
+
+		Debug.Log(string.Format("CS: Chunk terrain built in {0} seconds", t1 - t0));
+	}
+}
