@@ -10,8 +10,10 @@ public class CSContourGenerator : MonoBehaviour
 
 	[Header("Voxel Settings")]
 	public Vector3Int size;
+	public Vector3Int oldSize;
 	public float centerBias;
 	public float maxCornerDistance;
+	public bool autoUpdate;
 
 	Mesh contour;
 	MeshFilter meshFilter;
@@ -43,6 +45,12 @@ public class CSContourGenerator : MonoBehaviour
 	{
     	GenerateChunk();    
 	}
+
+	void Update()
+    {
+		if (autoUpdate)
+			GenerateChunk();
+    }
 
 	//void OnEnable()
 	//{
@@ -78,6 +86,8 @@ public class CSContourGenerator : MonoBehaviour
 
 		contourGenerator.GetKernelThreadGroupSizes(_vertexKernel, 
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
+
+		oldSize = size;
 	}
 
 	void SetupBuffers()
@@ -137,6 +147,9 @@ public class CSContourGenerator : MonoBehaviour
 	public void GenerateChunk()
 	{
 
+		if (oldSize != size)
+			SetupBuffers();
+
 		int pointCount = size.x * size.y * size.z;
 		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
 
@@ -180,6 +193,7 @@ public class CSContourGenerator : MonoBehaviour
 		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles, {2} indices in {3} seconds", 
 			vertexCount, quadCount * 2, indexCount, t1 - t0));
 
+		contour.Clear();
 		contour.vertices = vertices;
 		contour.triangles = triangles;
 		contour.RecalculateNormals();

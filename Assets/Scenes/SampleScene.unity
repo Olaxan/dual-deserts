@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contourGenerator: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  size: {x: 64, y: 64, z: 64}
+  size: {x: 16, y: 16, z: 16}
   centerBias: 0.5
   maxCornerDistance: 1
 --- !u!23 &695777394

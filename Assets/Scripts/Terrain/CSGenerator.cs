@@ -8,6 +8,7 @@ public class CSGenerator : MonoBehaviour
 	[Header("Terrain Settings")]
 	public float noiseScale;
 	public float noiseMagnitude;
+	public Vector3 noiseOffset;
 
 	int _generatorKernel;
 	uint _threadSizeX;
@@ -35,6 +36,7 @@ public class CSGenerator : MonoBehaviour
 
 		terrainShader.SetFloat("noiseScale", noiseScale);
 		terrainShader.SetFloat("noiseMagnitude", noiseMagnitude);
+		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
 
 		terrainShader.SetBuffer(_generatorKernel, "iso", isoBuffer);
 
