@@ -19,6 +19,7 @@ AppendStructuredBuffer<Quad> quads;
 int LOD;
 float maxCornerDistance;
 float centerBias;
+float clampRange;
 
 int getVoxelIndex(int3 id)
 {
@@ -163,7 +164,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	float3 vertex;
 	if (SolveError(pointCount, A, b, vertex))
 	{
-		vertex = clamp(vertex, float3(id), float3(id + uint3(1, 1, 1)));
+		vertex = clamp(vertex, float3(id), float3(id + float3(clampRange, clampRange, clampRange)));
 	}
 	else 
 		vertex = voxelCenter;

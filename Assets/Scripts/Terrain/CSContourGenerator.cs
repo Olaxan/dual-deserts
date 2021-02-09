@@ -12,6 +12,7 @@ public class CSContourGenerator : MonoBehaviour
 	public Vector3Int size;
 	public float centerBias;
 	public float maxCornerDistance;
+	public float clampRange;
 
 	[Header("Debug")]
 	public bool autoUpdate;
@@ -156,8 +157,6 @@ public class CSContourGenerator : MonoBehaviour
 		int pointCount = size.x * size.y * size.z;
 		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
 
-		var t0 = Time.realtimeSinceStartup;
-
 		Vector3Int ts = new Vector3Int(
 				Mathf.CeilToInt(size.x / _threadSizeX), 
 				Mathf.CeilToInt(size.y / _threadSizeY), 
@@ -168,6 +167,7 @@ public class CSContourGenerator : MonoBehaviour
 		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
 		contourGenerator.SetFloat("maxCornerDistance", maxCornerDistance);
 		contourGenerator.SetFloat("centerBias", centerBias);
+		contourGenerator.SetFloat("clampRange", clampRange);
 
 		quadBuffer.SetCounterValue(0);
 		vertexBuffer.SetCounterValue(0);
@@ -192,13 +192,10 @@ public class CSContourGenerator : MonoBehaviour
 		quadBuffer.GetData(triangles);
 		vertexBuffer.GetData(vertices);
 
-		var t1 = Time.realtimeSinceStartup;
-		Debug.Log(string.Format("CS: Created {0} vertices, {1} triangles, {2} indices in {3} seconds", 
-			vertexCount, quadCount * 2, indexCount, t1 - t0));
-
 		contour.Clear();
 		contour.vertices = vertices;
 		contour.triangles = triangles;
 		contour.RecalculateNormals();
+		contour.RecalculateTangents();
 	}
 }

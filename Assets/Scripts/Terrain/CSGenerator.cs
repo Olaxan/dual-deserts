@@ -32,8 +32,6 @@ public class CSGenerator : MonoBehaviour
 
 	public void Generate(ComputeBuffer isoBuffer, Vector3Int size, Vector3Int chunk)
 	{
-		var t0 = Time.realtimeSinceStartup;
-
 		noiseOffset += scroll * Time.deltaTime;
 
 		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
@@ -51,9 +49,5 @@ public class CSGenerator : MonoBehaviour
 				Mathf.CeilToInt(size.z / _threadSizeZ));
 
 		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
-
-		var t1 = Time.realtimeSinceStartup;
-
-		Debug.Log(string.Format("CS: Chunk {0} terrain generated in {1} seconds", chunk, t1 - t0));
 	}
 }
