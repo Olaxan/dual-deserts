@@ -30,6 +30,11 @@ public class CSGenerator : MonoBehaviour
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 	}
 
+	public ComputeBuffer CreateIsoBuffer(Vector3Int size)
+	{
+		return new ComputeBuffer(size.x * size.y * size.z, 4 * sizeof(float));
+	}
+
 	public void Generate(ComputeBuffer isoBuffer, Vector3Int size, Vector3Int chunk)
 	{
 		noiseOffset += scroll * Time.deltaTime;

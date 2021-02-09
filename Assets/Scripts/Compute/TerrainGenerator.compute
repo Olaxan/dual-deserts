@@ -38,39 +38,39 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 	p.dist = snoise(noisePos) * noiseMagnitude;
 	p.normal = calculateNormal(noisePos);
 
-	if (p.dist <= 0)
-	{
-		if (id.x == 0)
-		{
-			p.dist = 0.5;
-			p.normal = -axes[0];
-		}
-		else if (id.y == 0)
-		{
-			p.dist = 0.5;
-			p.normal = -axes[1];
-		}
-		else if (id.z == 0)
-		{
-			p.dist = 0.5;
-			p.normal = -axes[2];
-		}
-		else if (id.x == isoSize.x - 1)
-		{
-			p.dist = 0.5;
-			p.normal = axes[0];
-		}
-		else if (id.y == isoSize.y - 1)
-		{
-			p.dist = 0.5;
-			p.normal = axes[1];
-		}
-		else if (id.z == isoSize.z - 1)
-		{
-			p.dist = 0.5;
-			p.normal = axes[2];
-		}
-	}
+	//if (p.dist <= 0)
+	//{
+	//	if (id.x == 0)
+	//	{
+	//		p.dist = 0.5;
+	//		p.normal = -axes[0];
+	//	}
+	//	else if (id.y == 0)
+	//	{
+	//		p.dist = 0.5;
+	//		p.normal = -axes[1];
+	//	}
+	//	else if (id.z == 0)
+	//	{
+	//		p.dist = 0.5;
+	//		p.normal = -axes[2];
+	//	}
+	//	else if (id.x == isoSize.x - 1)
+	//	{
+	//		p.dist = 0.5;
+	//		p.normal = axes[0];
+	//	}
+	//	else if (id.y == isoSize.y - 1)
+	//	{
+	//		p.dist = 0.5;
+	//		p.normal = axes[1];
+	//	}
+	//	else if (id.z == isoSize.z - 1)
+	//	{
+	//		p.dist = 0.5;
+	//		p.normal = axes[2];
+	//	}
+	//}
 
 
 

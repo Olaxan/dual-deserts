@@ -13,12 +13,14 @@ int getVolumeIndex(int3 id)
 	return ((id.z * isoSize.y) + id.y) * isoSize.x + id.x;
 }
 
-bool isEdge(int3 id)
+bool checkEdge(int3 id, int range)
 {
-	return (id.x >= isoSize.x - 1 || id.y >= isoSize.y - 1 || id.z >= isoSize.z - 1);
+	return (id.x >= isoSize.x - range 
+		|| id.y >= isoSize.y - range 
+		|| id.z >= isoSize.z - range);
 }
 
 bool isBorder(int3 id)
 {
-	return (id.x * id.y * id.z == 0) || isEdge(id);
+	return (id.x * id.y * id.z == 0) || checkEdge(id, 1);
 }

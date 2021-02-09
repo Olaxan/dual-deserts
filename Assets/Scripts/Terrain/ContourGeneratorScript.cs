@@ -10,6 +10,8 @@ public class ContourGeneratorScript : MonoBehaviour
 	public float maxCornerDistance;
 	public float pushSize;
 
+	CSGenerator terrainGenerator;
+
 	Mesh contour;
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
@@ -77,13 +79,14 @@ public class ContourGeneratorScript : MonoBehaviour
 		var iso = new Array3<IsoPoint>(size);
 		var mesh = new VoxelMesh(size);
 
-		// Not nice
-		iso.ForEach3( (Vector3Int pos) => { iso[pos] = new IsoPoint(float.MaxValue, Vector3.zero); } );
+		var buf = terrainGenerator.CreateIsoBuffer(size);
+		terrainGenerator.Generate(buf, size, new Vector3Int(0, 0, 0));
+		IsoPoint[] isoArr = new IsoPoint[size.x * size.y * size.z];
+		buf.GetData(isoArr);
+		iso.Data = isoArr;
+		buf.Release();
 
-		var center = (Vector3)size * 0.5f + new Vector3(0, 0, size.z) * 2.0f / 16.0f;
-		float rad = size.x * 3.5f / 16.0f;
-
-		Generator.AddSphere(iso, center, rad);
+		Debug.Log(iso.Count);
 
 		var t0 = Time.realtimeSinceStartup;
 
@@ -111,6 +114,10 @@ public class ContourGeneratorScript : MonoBehaviour
 		meshRenderer = GetComponent<MeshRenderer>();
 		if (meshRenderer == null)
 			meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+		terrainGenerator = gameObject.GetComponent<CSGenerator>();
+		if (terrainGenerator == null)
+			terrainGenerator = gameObject.AddComponent<CSGenerator>();
 
 		//meshCollider = GetComponent<MeshCollider>();
 
@@ -232,7 +239,7 @@ public class ContourGeneratorScript : MonoBehaviour
 	void BuildTriangles(Array3<IsoPoint> iso, VoxelMesh mesh)
 	{
 
-		mesh.voxels.ForEach3( (Vector3Int pos) => 
+		mesh.voxels.ForEach3(mesh.voxels.Size - Vector3Int.one, (Vector3Int pos) => 
 		{
 			var v0 = mesh.voxels[pos];
 

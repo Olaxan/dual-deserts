@@ -32,7 +32,7 @@ public class Array3<T>
 
 	public Vector3Int Size { get => size; }
 	public int Count { get => size.x * size.y * size.z; }
-	public T[] Data { get => data; }
+	public T[] Data { get => data; set => data = value; }
 
 	public void Fill(T value)
 	{

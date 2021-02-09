@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 695777396}
   - component: {fileID: 695777393}
   m_Layer: 0
-  m_Name: ChunkBuilder
+  m_Name: Chunk Builder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contourGenerator: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  size: {x: 32, y: 32, z: 32}
+  size: {x: 64, y: 64, z: 64}
   centerBias: 0.5
   maxCornerDistance: 1
   clampRange: 2

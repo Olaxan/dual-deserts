@@ -91,7 +91,7 @@ bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out flo
 void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 {
 
-	if (isEdge(id))
+	if (checkEdge(id, 1))
 		return;
 
 	int index = getVoxelIndex(id);
@@ -178,10 +178,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 void CSMakeTriangles(uint3 id : SV_DispatchThreadID)
 {
 
-	//if (isBorder(id) && iso[getVolumeIndex(id)].dist <= 0)
-	//	return;
-
-	if (isEdge(id))
+	if (checkEdge(id, 2))
 		return;
 
 	int v0 = indices[getVoxelIndex(id)];
@@ -202,6 +199,7 @@ void CSMakeTriangles(uint3 id : SV_DispatchThreadID)
 			continue;
 
 		int v1, v2, v3;
+		int s1, s2, s3;
 		
 		if (ai == 0)
 		{
