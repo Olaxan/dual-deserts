@@ -1,7 +1,8 @@
 ﻿#pragma kernel CSGenerator
 
-#include "/Includes/Volume.compute"
-#include "/Includes/Tables.compute"
+#include "/Includes/Volume.cginc"
+#include "/Includes/Tables.cginc"
+#include "/Includes/Simplex.cginc"
 
 static uint2 oa[3] = 
 {
@@ -12,16 +13,70 @@ static uint2 oa[3] =
 
 int3 chunkOffset;
 
-float floorLevel;
+float noiseScale;
+float noiseMagnitude;
+
+// for function f(p)
+float3 calculateNormal(in float3 p)
+{
+	const float h = 0.0001; // replace by an appropriate value
+	const float2 k = float2(1, -1);
+	return normalize(
+		k.xyy * snoise(p + k.xyy * h) +
+		k.yyx * snoise(p + k.yyx * h) +
+		k.yxy * snoise(p + k.yxy * h) +
+		k.xxx * snoise(p + k.xxx * h));
+}
 
 [numthreads(8,8,1)]
 void CSGenerator(uint3 id : SV_DispatchThreadID)
 {
 	int index = getVolumeIndex(id);
+	float3 noisePos = float3(id) * noiseScale;
 
 	IsoPoint p;
-	p.dist = float(id.y) - floorLevel;
-	p.normal = float3(0, sign(p.dist), 0);
+
+	p.dist = snoise(noisePos) * noiseMagnitude;
+	p.normal = calculateNormal(noisePos);
+
+	if (p.dist <= 0)
+	{
+		if (id.x == 0)
+		{
+			p.dist = 0.5;
+			p.normal = -axes[0];
+		}
+		else if (id.y == 0)
+		{
+			p.dist = 0.5;
+			p.normal = -axes[1];
+		}
+		else if (id.z == 0)
+		{
+			p.dist = 0.5;
+			p.normal = -axes[2];
+		}
+		else if (id.x == isoSize.x - 1)
+		{
+			p.dist = 0.5;
+			p.normal = axes[0];
+		}
+		else if (id.y == isoSize.y - 1)
+		{
+			p.dist = 0.5;
+			p.normal = axes[1];
+		}
+		else if (id.z == isoSize.z - 1)
+		{
+			p.dist = 0.5;
+			p.normal = axes[2];
+		}
+	}
+
+
+
+	//p.dist = float(id.y) - floorLevel;
+	//p.normal = float3(0, sign(p.dist), 0);
 
 	iso[index] = p;
 }

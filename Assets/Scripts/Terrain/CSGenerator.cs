@@ -6,7 +6,8 @@ public class CSGenerator : MonoBehaviour
 	public ComputeShader terrainShader;
 
 	[Header("Terrain Settings")]
-	public float floorLevel;
+	public float noiseScale;
+	public float noiseMagnitude;
 
 	int _generatorKernel;
 	uint _threadSizeX;
@@ -31,7 +32,9 @@ public class CSGenerator : MonoBehaviour
 
 		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
-		terrainShader.SetFloat("floorLevel", floorLevel);
+
+		terrainShader.SetFloat("noiseScale", noiseScale);
+		terrainShader.SetFloat("noiseMagnitude", noiseMagnitude);
 
 		terrainShader.SetBuffer(_generatorKernel, "iso", isoBuffer);
 
@@ -44,6 +47,6 @@ public class CSGenerator : MonoBehaviour
 
 		var t1 = Time.realtimeSinceStartup;
 
-		Debug.Log(string.Format("CS: Chunk terrain built in {0} seconds", t1 - t0));
+		Debug.Log(string.Format("CS: Chunk {0} terrain generated in {1} seconds", chunk, t1 - t0));
 	}
 }

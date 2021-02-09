@@ -168,8 +168,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contourGenerator: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  size: {x: 32, y: 32, z: 32}
-  centerBias: 0.25
+  size: {x: 64, y: 64, z: 64}
+  centerBias: 0.5
   maxCornerDistance: 1
 --- !u!23 &695777394
 MeshRenderer:
@@ -231,7 +231,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
-  floorLevel: 0
+  noiseScale: 0.05
+  noiseMagnitude: 8
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

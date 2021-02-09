@@ -1,8 +1,8 @@
 ﻿#pragma kernel CSMakeVertices
 #pragma kernel CSMakeTriangles
 
-#include "/Includes/Volume.compute"
-#include "/Includes/Tables.compute"
+#include "/Includes/Volume.cginc"
+#include "/Includes/Tables.cginc"
 
 static const int xyNumThreads = 8;
 
