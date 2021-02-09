@@ -8,19 +8,20 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Sand
-  m_Shader: {fileID: 4800000, guid: 9adb43ebbfe070d1da8815599b5b5fce, type: 3}
-  m_ShaderKeywords: AO_ON TEXTUREMODULE_ON _AOENABLE_ON _AOUV_UV0 _GRADIENTSPACE_WORLD_SPACE
-    _GRADSETTINGS_B_USE_GLOBAL _GRADSETTINGS_D_USE_GLOBAL _GRADSETTINGS_F_USE_GLOBAL
-    _GRADSETTINGS_L_USE_GLOBAL _GRADSETTINGS_R_USE_GLOBAL _GRADSETTINGS_T_USE_GLOBAL
-    _LMAPBLENDINGMODE_ADD _MODE_OPAQUE _NORMALMAP _OTHERSETTINGS_ON _PARALLAXMAP
-    _SHADING_B_VERTEX_COLOR _SHADING_D_VERTEX_COLOR _SHADING_F_VERTEXCOLOR _SHADING_L_SOLID_COLOR
-    _SHADING_R_SOLID_COLOR _SHADING_T_VERTEX_COLOR _SHOWAO_ON _SHOWCUSTOMSHADING_ON
-    _SHOWFOG_ON _SHOWLEFT_ON _SHOWLMAP_ON _SHOWTEXTURE_ON _SHOWTOP_ON
+  m_Shader: {fileID: 4800000, guid: 7f50d1ec77e2cc9459ca9d36924ffc53, type: 3}
+  m_ShaderKeywords: AO_ON BOTTOMSOLID FRONTSOLID LEFTSOLID TEXTUREMODULE_ON TOPSOLID
+    _AOUV_UV0 _GRADIENTSPACE_WORLD_SPACE _GRADSETTINGS_B_USE_GLOBAL _GRADSETTINGS_D_USE_GLOBAL
+    _GRADSETTINGS_F_USE_GLOBAL _GRADSETTINGS_L_USE_GLOBAL _GRADSETTINGS_R_USE_GLOBAL
+    _GRADSETTINGS_T_USE_GLOBAL _LMAPBLENDINGMODE_ADD _MODE_OPAQUE _NORMALMAP _OTHERSETTINGS_ON
+    _PARALLAXMAP _SHADING_B_VERTEX_COLOR _SHADING_D_VERTEX_COLOR _SHADING_F_VERTEXCOLOR
+    _SHADING_L_VERTEX_COLOR _SHADING_R_VERTEX_COLOR _SHADING_T_VERTEX_COLOR _SHOWAO_ON
+    _SHOWCUSTOMSHADING_ON _SHOWFOG_ON _SHOWLMAP_ON _SHOWTEXTURE_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
+  m_CustomRenderQueue: 2000
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -54,7 +55,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTexture:
-        m_Texture: {fileID: 2800000, guid: b9b648bc973dc6348bbd54c54188d9f2, type: 3}
+        m_Texture: {fileID: 2800000, guid: ebbd111a615c42746bc8e1b08ba834de, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -125,27 +126,27 @@ Material:
     - _Rotation_T: 0
     - _Saturation: 0
     - _Shading_B: 0
-    - _Shading_D: 0
-    - _Shading_F: 0
-    - _Shading_L: 0
+    - _Shading_D: 1
+    - _Shading_F: 1
+    - _Shading_L: 1
     - _Shading_R: 0
-    - _Shading_T: 0
+    - _Shading_T: 1
     - _ShadowBlend: 0
     - _ShadowInfluence: 0
     - _ShowAO: 1
     - _ShowAmbientSettings: 0
     - _ShowBack: 0
-    - _ShowBottom: 0
+    - _ShowBottom: 1
     - _ShowColorCorrection: 0
     - _ShowCustomShading: 1
     - _ShowFog: 1
-    - _ShowFront: 0
+    - _ShowFront: 1
     - _ShowGlobalGradientSettings: 0
     - _ShowLMap: 1
-    - _ShowLeft: 0
+    - _ShowLeft: 1
     - _ShowRight: 0
     - _ShowTexture: 1
-    - _ShowTop: 0
+    - _ShowTop: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -159,11 +160,11 @@ Material:
     - _AmbientColor: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color1_B: {r: 1, g: 1, b: 1, a: 1}
-    - _Color1_D: {r: 1, g: 1, b: 1, a: 1}
+    - _Color1_D: {r: 0.46226418, g: 0.21365501, b: 0, a: 1}
     - _Color1_F: {r: 1, g: 1, b: 1, a: 1}
-    - _Color1_L: {r: 0, g: 0.42878076, b: 0.9339623, a: 1}
+    - _Color1_L: {r: 0.2028302, g: 0.56792045, b: 1, a: 1}
     - _Color1_R: {r: 1, g: 0.13743861, b: 0, a: 1}
-    - _Color1_T: {r: 0.5471698, g: 0.30688766, b: 0.14711641, a: 1}
+    - _Color1_T: {r: 0.8679245, g: 0.59530634, b: 0.09416164, a: 1}
     - _Color2_B: {r: 1, g: 1, b: 1, a: 1}
     - _Color2_D: {r: 1, g: 1, b: 1, a: 1}
     - _Color2_F: {r: 1, g: 1, b: 1, a: 1}
