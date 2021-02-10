@@ -17,6 +17,7 @@ RWStructuredBuffer<float3> vertices;
 AppendStructuredBuffer<Quad> quads;
 
 int LOD;
+float3 scale;
 float maxCornerDistance;
 float centerBias;
 float clampRange;
@@ -168,6 +169,8 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	}
 	else 
 		vertex = voxelCenter;
+
+	vertex *= scale;
 
 	int idx = vertices.IncrementCounter();
 	vertices[idx] = vertex;

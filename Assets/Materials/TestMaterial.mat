@@ -165,7 +165,7 @@ Material:
     - _Color1_F: {r: 0, g: 0.19258147, b: 0.4811321, a: 1}
     - _Color1_L: {r: 1, g: 1, b: 1, a: 1}
     - _Color1_R: {r: 1, g: 1, b: 1, a: 1}
-    - _Color1_T: {r: 0, g: 0.4056604, b: 0.31406265, a: 1}
+    - _Color1_T: {r: 1, g: 1, b: 1, a: 1}
     - _Color2: {r: 1, g: 1, b: 1, a: 0}
     - _Color2_B: {r: 1, g: 1, b: 1, a: 1}
     - _Color2_D: {r: 1, g: 1, b: 1, a: 1}

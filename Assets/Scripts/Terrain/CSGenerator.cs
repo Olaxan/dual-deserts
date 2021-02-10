@@ -6,9 +6,16 @@ public class CSGenerator : MonoBehaviour
 	public ComputeShader terrainShader;
 
 	[Header("Terrain Settings")]
-	public float noiseScale;
-	public float noiseMagnitude;
+	public float surfaceLevel;
+	public float surfaceScale;
+	public float surfaceMagnitude;
+	public float surfaceDistanceMult;
+
+	public float caveScale;
+	public float caveDistanceMult;
+
 	public Vector3 noiseOffset;
+	public Vector3 noiseScale;
 
 	[Header("Debug")]
 	public Vector3 scroll;
@@ -42,8 +49,15 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
 
-		terrainShader.SetFloat("noiseScale", noiseScale);
-		terrainShader.SetFloat("noiseMagnitude", noiseMagnitude);
+		terrainShader.SetFloat("surfaceLevel", surfaceLevel);
+		terrainShader.SetFloat("surfaceScale", surfaceScale);
+		terrainShader.SetFloat("surfaceMagnitude", surfaceMagnitude);
+		terrainShader.SetFloat("surfaceDistanceMult", surfaceDistanceMult);
+
+		terrainShader.SetFloat("caveScale", caveScale);
+		terrainShader.SetFloat("caveDistanceMult", caveDistanceMult);
+
+		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
 
 		terrainShader.SetBuffer(_generatorKernel, "iso", isoBuffer);

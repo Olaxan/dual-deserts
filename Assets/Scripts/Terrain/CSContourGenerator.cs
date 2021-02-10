@@ -10,6 +10,7 @@ public class CSContourGenerator : MonoBehaviour
 
 	[Header("Voxel Settings")]
 	public Vector3Int size;
+	public Vector3 scale;
 	public float centerBias;
 	public float maxCornerDistance;
 	public float clampRange;
@@ -165,6 +166,7 @@ public class CSContourGenerator : MonoBehaviour
 		terrainGenerator.Generate(isoBuffer, size, new Vector3Int(0,0,0));
 
 		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
+		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });
 		contourGenerator.SetFloat("maxCornerDistance", maxCornerDistance);
 		contourGenerator.SetFloat("centerBias", centerBias);
 		contourGenerator.SetFloat("clampRange", clampRange);
