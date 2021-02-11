@@ -12,9 +12,8 @@ public class TerrainLoader : MonoBehaviour
 	public Vector3 worldScale = Vector3.one;
 	public Vector3Int volumeSize = new Vector3Int(16, 16, 16);
 
-	public int staticChunks = 4;
 	public Material defaultMaterial;
-	Vector3Int oldChunk = Vector3Int.zero;
+	Vector3Int oldChunk;
 
 	CSContourGenerator contourGenerator;
 
@@ -51,6 +50,8 @@ public class TerrainLoader : MonoBehaviour
 		chunkComp.defaultMaterial = defaultMaterial;
 		chunkComp.Setup();
 
+		Debug.Log($"Adding chunk to pool (count = {chunks.Count})");
+
 		return chunkComp;
 	}
 
@@ -69,7 +70,6 @@ public class TerrainLoader : MonoBehaviour
 
 		if (viewChunk != oldChunk)
 		{
-			Debug.Log($"Moved to {viewChunk}");
 			oldChunk = viewChunk;
 
 			for (int i = chunks.Count - 1; i >= 0; i--)
@@ -84,34 +84,38 @@ public class TerrainLoader : MonoBehaviour
 					chunks.RemoveAt(i);
 				}
 			}
+
+			for (int x = -viewDistance; x < viewDistance; x++)
+			{
+				for (int y = -viewDistance / 2; y < viewDistance / 2; y++)
+				{
+					for (int z = -viewDistance; z < viewDistance; z++)
+					{
+						Vector3Int pos = new Vector3Int(x, y, z);
+						Vector3Int offsetPos = pos + viewChunk;
+
+						if (loadedChunks.ContainsKey(offsetPos))
+							continue;
+
+						if (pos.sqrMagnitude > sqrDist)
+							continue;
+
+						Chunk newChunk;
+						if (unloadedChunks.Count > 0)
+							newChunk = unloadedChunks.Dequeue();
+						else
+							newChunk = AddChunk();
+
+						Vector3 chunkOffset = offsetPos * (volumeSize - Vector3Int.one * 2);
+						newChunk.Refresh(offsetPos, Vector3.Scale(chunkOffset, worldScale));
+						loadedChunks.Add(offsetPos, newChunk);
+						chunks.Add(newChunk);
+						contourGenerator.GenerateChunk(newChunk);
+
+					}
+				}
+			}
 		}
-
-
-		//for (int x = 0; x < staticChunks; x++)
-		//{
-		//	for (int y = -staticChunks; y < staticChunks; y++)
-		//	{
-		//		for (int z = 0; z < staticChunks; z++)
-		//		{
-		//			Vector3Int p = new Vector3Int(x, y, z);
-
-		//			if (loadedChunks.ContainsKey(p))
-		//				continue;
-
-		//			Chunk newChunk;
-		//			if (unloadedChunks.Count > 0)
-		//				newChunk = unloadedChunks.Dequeue();
-		//			else
-		//				newChunk = AddChunk();
-
-		//			Vector3 chunkOffset = p * (volumeSize - Vector3Int.one * 2);
-		//			newChunk.Refresh(p, Vector3.Scale(chunkOffset, worldScale));
-		//			loadedChunks.Add(p, newChunk);
-		//			chunks.Add(newChunk);
-		//			contourGenerator.GenerateChunk(newChunk);
-		//		}
-		//	}
-		//}
 	}
 
 	public void UpdateAll()
