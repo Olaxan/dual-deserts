@@ -95,9 +95,8 @@ public class CSContourGenerator : MonoBehaviour
 
 	void SetupBuffers()
 	{
-		Vector3Int voxelSize = size - Vector3Int.one;
 		int pointCount = size.x * size.y * size.z;
-		int indexCount = voxelSize.x * voxelSize.y * voxelSize.z;
+		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
 		int quadCount = indexCount * 3 * 2;
 
 		bufferSize = size;

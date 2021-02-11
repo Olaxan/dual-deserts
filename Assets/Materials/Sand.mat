@@ -87,7 +87,7 @@ Material:
     - _FogHeight: 10
     - _FogYStartPos: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.15
+    - _Glossiness: 0.374
     - _GlossyReflections: 1
     - _GradSettings_B: 0
     - _GradSettings_D: 0
@@ -149,7 +149,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TextureScale: 1
+    - _TextureScale: 10
     - _UVSec: 0
     - _UnityFogEnable: 0
     - _ZWrite: 1

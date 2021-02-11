@@ -29,8 +29,6 @@ float density(in float3 p)
 	float a = (p.y - surfaceLevel + snoise(p.xz * surfaceScale) * surfaceMagnitude) * surfaceDistanceMult;
 	float b = snoise(p * caveScale) * caveDistanceMult;
 
-	//return b;
-
 	return max(a, b);
 }
 
