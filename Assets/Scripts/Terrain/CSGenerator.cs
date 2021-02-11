@@ -46,6 +46,8 @@ public class CSGenerator : MonoBehaviour
 	{
 		noiseOffset += scroll * Time.deltaTime;
 
+		Debug.Log(chunk);
+
 		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
 

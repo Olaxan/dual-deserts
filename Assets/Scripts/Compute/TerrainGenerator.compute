@@ -13,6 +13,8 @@ static uint2 oa[3] =
 	uint2(0,1)
 };
 
+int3 chunkOffset;
+
 float3 noiseOffset;
 float3 noiseScale;
 
@@ -48,7 +50,7 @@ float3 calculateNormal(in float3 p)
 void CSGenerator(uint3 id : SV_DispatchThreadID)
 {
 	int index = getVolumeIndex(id);
-	float3 noisePos = (float3(id) + noiseOffset) * noiseScale;
+	float3 noisePos = (float3(id + chunkOffset * (isoSize - int3(2, 2, 2))) + noiseOffset) * noiseScale;
 
 	IsoPoint p;
 

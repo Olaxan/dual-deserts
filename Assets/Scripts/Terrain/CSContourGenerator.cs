@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter))]
-[RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(CSGenerator))]
 public class CSContourGenerator : MonoBehaviour
 {
@@ -9,19 +7,14 @@ public class CSContourGenerator : MonoBehaviour
 	public ComputeShader contourGenerator;
 
 	[Header("Voxel Settings")]
-	public Vector3Int size;
-	public Vector3 scale;
 	public float centerBias;
 	public float maxCornerDistance;
 	public float clampRange;
 
-	[Header("Debug")]
-	public bool autoUpdate;
-
-	Mesh contour;
-	MeshFilter meshFilter;
-
 	CSGenerator terrainGenerator;
+
+	Vector3Int size;
+	Vector3 scale;
 
 	ComputeBuffer isoBuffer;
 	ComputeBuffer indexBuffer;
@@ -39,51 +32,16 @@ public class CSContourGenerator : MonoBehaviour
 
 	Vector3Int VoxelSize { get => size - Vector3Int.one; }
 
-    void Awake()
-    {
-		Setup();
-		SetupBuffers();
-    }
-
-	void Start()
-	{
-    	GenerateChunk();    
-	}
-
-	void Update()
-    {
-		if (autoUpdate)
-			GenerateChunk();
-    }
-
-	//void OnEnable()
-	//{
-	//	SetupBuffers();
-	//}
-
 	void OnDestroy()
 	{
 		ReleaseBuffers();
 	}
 
-	void Setup()
+	public void Setup(Vector3Int isoSize, Vector3 isoScale)
 	{
-		meshFilter = gameObject.GetComponent<MeshFilter>();
-		if (meshFilter == null)
-			meshFilter = gameObject.AddComponent<MeshFilter>();
-
 		terrainGenerator = gameObject.GetComponent<CSGenerator>();
 		if (terrainGenerator == null)
 			terrainGenerator = gameObject.AddComponent<CSGenerator>();
-
-		contour = meshFilter.sharedMesh;
-
-		if (contour == null)
-		{
-			contour = new Mesh();
-			contour.name = "Contour";
-			meshFilter.sharedMesh = contour;
-		}
 
 		_vertexKernel = contourGenerator.FindKernel("CSMakeVertices");
 		_triangleKernel = contourGenerator.FindKernel("CSMakeTriangles");
@@ -91,6 +49,68 @@ public class CSContourGenerator : MonoBehaviour
 		contourGenerator.GetKernelThreadGroupSizes(_vertexKernel, 
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 
+		size = isoSize;
+		scale = isoScale;
+
+		SetupBuffers();
+
+	}
+
+	public void GenerateChunk(Chunk chunk)
+	{
+
+		if (bufferSize != size)
+			SetupBuffers();
+
+		int pointCount = size.x * size.y * size.z;
+		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
+
+		Vector3Int ts = new Vector3Int(
+				Mathf.CeilToInt(size.x / _threadSizeX), 
+				Mathf.CeilToInt(size.y / _threadSizeY), 
+				Mathf.CeilToInt(size.z / _threadSizeZ));
+
+		terrainGenerator.Generate(isoBuffer, size, chunk.position);
+
+		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
+		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });
+		contourGenerator.SetFloat("maxCornerDistance", maxCornerDistance);
+		contourGenerator.SetFloat("centerBias", centerBias);
+		contourGenerator.SetFloat("clampRange", clampRange);
+
+		quadBuffer.SetCounterValue(0);
+		vertexBuffer.SetCounterValue(0);
+		indexBuffer.SetCounterValue(0);
+
+		contourGenerator.Dispatch(_vertexKernel, ts.x, ts.y, ts.z);
+		contourGenerator.Dispatch(_triangleKernel, ts.x, ts.y, ts.z);
+
+		ComputeBuffer.CopyCount(quadBuffer, quadCountBuffer, 0);
+		int[] quadCountArray = { 0 };
+		quadCountBuffer.GetData(quadCountArray);
+		int quadCount = quadCountArray[0];
+		
+		ComputeBuffer.CopyCount(vertexBuffer, vertexCountBuffer, 0);
+		int[] vertexCountArray = { 0 };
+		vertexCountBuffer.GetData(vertexCountArray);
+		int vertexCount = vertexCountArray[0];
+
+		Vector3[] vertices = new Vector3[vertexCount];
+		int[] triangles = new int[2 * 3 * quadCount];
+
+		quadBuffer.GetData(triangles);
+		vertexBuffer.GetData(vertices);
+
+		Mesh contour = chunk.contour;
+
+		if (contour == null)
+			return;
+
+		contour.Clear();
+		contour.vertices = vertices;
+		contour.triangles = triangles;
+		contour.RecalculateNormals();
+		contour.RecalculateTangents();
 	}
 
 	void SetupBuffers()
@@ -146,57 +166,5 @@ public class CSContourGenerator : MonoBehaviour
 		quadBuffer = null;
 		quadCountBuffer = null;
 		vertexCountBuffer = null;
-	}
-
-	public void GenerateChunk()
-	{
-
-		if (bufferSize != size)
-			SetupBuffers();
-
-		int pointCount = size.x * size.y * size.z;
-		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
-
-		Vector3Int ts = new Vector3Int(
-				Mathf.CeilToInt(size.x / _threadSizeX), 
-				Mathf.CeilToInt(size.y / _threadSizeY), 
-				Mathf.CeilToInt(size.z / _threadSizeZ));
-
-		terrainGenerator.Generate(isoBuffer, size, new Vector3Int(0,0,0));
-
-		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
-		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });
-		contourGenerator.SetFloat("maxCornerDistance", maxCornerDistance);
-		contourGenerator.SetFloat("centerBias", centerBias);
-		contourGenerator.SetFloat("clampRange", clampRange);
-
-		quadBuffer.SetCounterValue(0);
-		vertexBuffer.SetCounterValue(0);
-		indexBuffer.SetCounterValue(0);
-
-		contourGenerator.Dispatch(_vertexKernel, ts.x, ts.y, ts.z);
-		contourGenerator.Dispatch(_triangleKernel, ts.x, ts.y, ts.z);
-
-		ComputeBuffer.CopyCount(quadBuffer, quadCountBuffer, 0);
-		int[] quadCountArray = { 0 };
-		quadCountBuffer.GetData(quadCountArray);
-		int quadCount = quadCountArray[0];
-		
-		ComputeBuffer.CopyCount(vertexBuffer, vertexCountBuffer, 0);
-		int[] vertexCountArray = { 0 };
-		vertexCountBuffer.GetData(vertexCountArray);
-		int vertexCount = vertexCountArray[0];
-
-		Vector3[] vertices = new Vector3[vertexCount];
-		int[] triangles = new int[2 * 3 * quadCount];
-
-		quadBuffer.GetData(triangles);
-		vertexBuffer.GetData(vertices);
-
-		contour.Clear();
-		contour.vertices = vertices;
-		contour.triangles = triangles;
-		contour.RecalculateNormals();
-		contour.RecalculateTangents();
 	}
 }

@@ -10,10 +10,10 @@ public class ChunkBuilderInspector : Editor
 
 		DrawDefaultInspector();
 
-		if (GUILayout.Button("Generate"))
-		{
-			generator.GenerateChunk();
-		}
+		//if (GUILayout.Button("Remesh All"))
+		//{
+		//	generator.UpdateAll();
+		//}
 		
 	}
 }
