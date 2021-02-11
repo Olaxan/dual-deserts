@@ -41,7 +41,7 @@ public class CSGenerator : MonoBehaviour
 		return new ComputeBuffer(size.x * size.y * size.z, 4 * sizeof(float));
 	}
 
-	public void Generate(ComputeBuffer isoBuffer, Vector3Int size, Vector3Int chunk)
+	public void Generate(ComputeBuffer isoBuffer, Vector3Int chunk, Vector3Int size, Vector3 scale)
 	{
 
 		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
@@ -57,8 +57,9 @@ public class CSGenerator : MonoBehaviour
 
 		terrainShader.SetFloat("derivativeStep", derivativeStep);
 
-		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
+		terrainShader.SetFloats("noiseScale",
+			new float[] { noiseScale.x * scale.x, noiseScale.y * scale.y, noiseScale.z * scale.z });
 
 		terrainShader.SetBuffer(_generatorKernel, "iso", isoBuffer);
 

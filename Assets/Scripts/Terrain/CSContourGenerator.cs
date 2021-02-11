@@ -90,7 +90,7 @@ public class CSContourGenerator : MonoBehaviour
 				Mathf.CeilToInt(size.y / _threadSizeY), 
 				Mathf.CeilToInt(size.z / _threadSizeZ));
 
-		terrainGenerator.Generate(isoBuffer, size, chunk.position);
+		terrainGenerator.Generate(isoBuffer, chunk.position, size, scale);
 
 		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
 		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });
