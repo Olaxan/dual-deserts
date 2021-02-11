@@ -18,6 +18,8 @@ int3 chunkOffset;
 float3 noiseOffset;
 float3 noiseScale;
 
+float derivativeStep;
+
 float surfaceLevel;
 float surfaceScale;
 float surfaceMagnitude;
@@ -37,7 +39,7 @@ float density(in float3 p)
 // for function f(p)
 float3 calculateNormal(in float3 p)
 {
-	const float h = 0.0001; // replace by an appropriate value
+	const float h = derivativeStep; // 0.0001
 	const float2 k = float2(1, -1);
 	return normalize(
 		k.xyy * density(p + k.xyy * h) +

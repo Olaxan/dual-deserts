@@ -17,6 +17,8 @@ public class CSGenerator : MonoBehaviour
 	public Vector3 noiseOffset;
 	public Vector3 noiseScale;
 
+	public float derivativeStep = 0.0001f;
+
 	int _generatorKernel;
 	uint _threadSizeX;
 	uint _threadSizeY;
@@ -52,6 +54,8 @@ public class CSGenerator : MonoBehaviour
 
 		terrainShader.SetFloat("caveScale", caveScale);
 		terrainShader.SetFloat("caveDistanceMult", caveDistanceMult);
+
+		terrainShader.SetFloat("derivativeStep", derivativeStep);
 
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
