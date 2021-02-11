@@ -87,7 +87,7 @@ public class TerrainLoader : MonoBehaviour
 
 			for (int x = -viewDistance; x < viewDistance; x++)
 			{
-				for (int y = -viewDistance / 2; y < viewDistance / 2; y++)
+				for (int y = -viewDistance; y < viewDistance; y++)
 				{
 					for (int z = -viewDistance; z < viewDistance; z++)
 					{
@@ -110,7 +110,7 @@ public class TerrainLoader : MonoBehaviour
 						newChunk.Refresh(offsetPos, Vector3.Scale(chunkOffset, worldScale));
 						loadedChunks.Add(offsetPos, newChunk);
 						chunks.Add(newChunk);
-						contourGenerator.GenerateChunk(newChunk);
+						contourGenerator.RequestRemesh(newChunk);
 
 					}
 				}
@@ -121,6 +121,6 @@ public class TerrainLoader : MonoBehaviour
 	public void UpdateAll()
 	{
 		foreach (Chunk chunk in chunks)
-			contourGenerator.GenerateChunk(chunk);
+			contourGenerator.RequestRemesh(chunk);
 	}
 }

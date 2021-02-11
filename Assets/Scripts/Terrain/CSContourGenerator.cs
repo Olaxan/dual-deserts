@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 [RequireComponent(typeof(CSGenerator))]
 public class CSContourGenerator : MonoBehaviour
@@ -23,6 +24,8 @@ public class CSContourGenerator : MonoBehaviour
 	ComputeBuffer quadCountBuffer;
 	ComputeBuffer vertexCountBuffer;
 
+	Queue<Chunk> buildQueue;
+
 	int _vertexKernel;
 	int _triangleKernel;
 	uint _threadSizeX;
@@ -31,6 +34,16 @@ public class CSContourGenerator : MonoBehaviour
 	Vector3Int bufferSize;
 
 	Vector3Int VoxelSize { get => size - Vector3Int.one; }
+
+	void Update()
+	{
+		if (buildQueue.Count > 0)
+		{
+			Chunk chunk = buildQueue.Dequeue();
+			chunk.contour.Clear();
+			GenerateChunk(chunk);
+		}
+	}
 
 	void OnDestroy()
 	{
@@ -49,6 +62,8 @@ public class CSContourGenerator : MonoBehaviour
 		contourGenerator.GetKernelThreadGroupSizes(_vertexKernel, 
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 
+		buildQueue = new Queue<Chunk>();
+
 		size = isoSize;
 		scale = isoScale;
 
@@ -56,7 +71,12 @@ public class CSContourGenerator : MonoBehaviour
 
 	}
 
-	public void GenerateChunk(Chunk chunk)
+	public void RequestRemesh(Chunk chunk)
+	{
+		buildQueue.Enqueue(chunk);
+	}
+
+	void GenerateChunk(Chunk chunk)
 	{
 
 		if (bufferSize != size)
@@ -111,6 +131,8 @@ public class CSContourGenerator : MonoBehaviour
 		contour.triangles = triangles;
 		contour.RecalculateNormals();
 		contour.RecalculateTangents();
+
+		chunk.UpdateCollider();
 	}
 
 	void SetupBuffers()

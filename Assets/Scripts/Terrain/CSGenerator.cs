@@ -41,6 +41,7 @@ public class CSGenerator : MonoBehaviour
 
 	public void Generate(ComputeBuffer isoBuffer, Vector3Int size, Vector3Int chunk)
 	{
+
 		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });	
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
 

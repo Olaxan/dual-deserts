@@ -39,9 +39,7 @@ public class Chunk : MonoBehaviour
 		if (meshCollider.sharedMesh == null)
 		{
 			meshCollider.sharedMesh = contour;
-
-			meshCollider.enabled = false;
-			meshCollider.enabled = true;
+			UpdateCollider();
 		}
 
 		meshRenderer.material = defaultMaterial;
@@ -53,6 +51,12 @@ public class Chunk : MonoBehaviour
 		gameObject.name = localPos.ToString();
 		position = localPos;
 		gameObject.transform.position = worldPos;
+	}
+
+	public void UpdateCollider()
+	{
+		meshCollider.enabled = false;
+		meshCollider.enabled = true;
 	}
 }
 
