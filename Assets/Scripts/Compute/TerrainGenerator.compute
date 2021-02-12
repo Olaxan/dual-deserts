@@ -3,6 +3,7 @@
 #include "/Includes/Volume.cginc"
 #include "/Includes/Tables.cginc"
 #include "/Includes/Simplex.cginc"
+#include "/Includes/Functions.cginc"
 
 //#define CLOSE_FIELD
 
@@ -30,31 +31,25 @@ float caveDistanceMult;
 
 float density(in float3 p)
 {
-	float depth = p.y - surfaceLevel;
 
-	float surf = depth;
+	float surf = p.y;
 	surf += snoise(p.xz * surfaceScale) * surfaceMagnitude;
-	surf += snoise(p.xz * surfaceScale / 5) * surfaceMagnitude * 3;
-	surf *= surfaceDistanceMult;
+	surf += snoise(p.xz * surfaceScale * 2.0) * surfaceMagnitude / 2.0;
+	surf += snoise(p.xz * surfaceScale * 4.0) * surfaceMagnitude / 4.0;
 
-	float caves = snoise(p * caveScale);
-	caves *= saturate(depth / 100);
-	caves *= 0;
-	caves *= caveDistanceMult;
+	float cube = sdRoundBox(p, float3(5, 5, 10), 2.0);
+	float torus = sdTorus(p, float2(12, 2));
+	float cyl = sdCappedCylinder(p, 5, 15);
 
-	return max(surf, caves);
+	float a = smin(surf, cube, 5).x;
+	float b = smin(a, torus, 5).x;
+	float c = smin(b, cyl, 5).x;
+
+	return c;
+
 }
 
-float3 estimateNormal(float3 p) {
-	return normalize(float3(
-		density(float3(p.x + derivativeStep, p.y, p.z)) - density(float3(p.x - derivativeStep, p.y, p.z)),
-		density(float3(p.x, p.y + derivativeStep, p.z)) - density(float3(p.x, p.y - derivativeStep, p.z)),
-		density(float3(p.x, p.y, p.z + derivativeStep)) - density(float3(p.x, p.y, p.z - derivativeStep))
-	));
-}
-
-// for function f(p)
-float3 calculateNormal(in float3 p)
+float3 calcNormal(in float3 p)
 {
 	const float h = derivativeStep; // 0.0001
 	const float2 k = float2(1, -1);
@@ -63,6 +58,15 @@ float3 calculateNormal(in float3 p)
 		k.yyx * density(p + k.yyx * h) +
 		k.yxy * density(p + k.yxy * h) +
 		k.xxx * density(p + k.xxx * h));
+}
+
+// Slightly more expensive but arguably better
+float3 calcNormal2(float3 p) {
+	return normalize(float3(
+		density(float3(p.x + derivativeStep, p.y, p.z)) - density(float3(p.x - derivativeStep, p.y, p.z)),
+		density(float3(p.x, p.y + derivativeStep, p.z)) - density(float3(p.x, p.y - derivativeStep, p.z)),
+		density(float3(p.x, p.y, p.z + derivativeStep)) - density(float3(p.x, p.y, p.z - derivativeStep))
+	));
 }
 
 [numthreads(8,8,1)]
@@ -75,7 +79,7 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 	IsoPoint p;
 
 	p.dist = density(noisePos);
-	p.normal = estimateNormal(noisePos);
+	p.normal = calcNormal2(noisePos);
 
 	#ifdef CLOSE_FIELD
 	if (p.dist <= 0)

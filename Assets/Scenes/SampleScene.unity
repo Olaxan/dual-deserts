@@ -190,14 +190,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
-  surfaceScale: 0.4
-  surfaceMagnitude: 0.15
-  surfaceDistanceMult: 64
+  surfaceScale: 1
+  surfaceMagnitude: 1
+  surfaceDistanceMult: 1
   caveScale: 1
-  caveDistanceMult: 22
+  caveDistanceMult: 1
   noiseOffset: {x: 0, y: 0, z: 0}
-  noiseScale: {x: 0.05, y: 0.05, z: 0.05}
-  derivativeStep: 0.035
+  noiseScale: {x: 1, y: 1, z: 1}
+  derivativeStep: 1
 --- !u!114 &695777397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,9 +211,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewer: {fileID: 339547606}
-  viewDistance: 5
+  viewDistance: 2
   viewDepth: 1
-  worldScale: {x: 0.5, y: 0.5, z: 0.5}
+  worldScale: {x: 1, y: 1, z: 1}
   volumeSize: {x: 64, y: 64, z: 64}
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
 --- !u!1 &705507993
@@ -425,7 +425,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 50
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalPosition.z
@@ -568,7 +568,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1062289106}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 14.23, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
