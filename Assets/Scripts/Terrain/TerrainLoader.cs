@@ -83,6 +83,7 @@ public class TerrainLoader : MonoBehaviour
 					loadedChunks.Remove(chunk.position);
 					unloadedChunks.Enqueue(chunk);
 					chunks.RemoveAt(i);
+					chunk.gameObject.SetActive(false);
 				}
 			}
 

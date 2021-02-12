@@ -42,6 +42,7 @@ public class CSContourGenerator : MonoBehaviour
 			Chunk chunk = buildQueue.Dequeue();
 			chunk.contour.Clear();
 			GenerateChunk(chunk);
+			chunk.gameObject.SetActive(true);
 		}
 	}
 
