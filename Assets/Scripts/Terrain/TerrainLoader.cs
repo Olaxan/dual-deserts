@@ -9,6 +9,7 @@ public class TerrainLoader : MonoBehaviour
 	public Transform viewer;
 
 	public int viewDistance = 3;
+	public int viewDepth = 1;
 	public Vector3 worldScale = Vector3.one;
 	public Vector3Int volumeSize = new Vector3Int(16, 16, 16);
 
@@ -85,11 +86,11 @@ public class TerrainLoader : MonoBehaviour
 				}
 			}
 
-			for (int x = -viewDistance; x < viewDistance; x++)
+			for (int x = -viewDistance; x <= viewDistance; x++)
 			{
-				for (int y = -viewDistance; y < viewDistance; y++)
+				for (int y = -viewDepth; y <= viewDepth; y++)
 				{
-					for (int z = -viewDistance; z < viewDistance; z++)
+					for (int z = -viewDistance; z <= viewDistance; z++)
 					{
 						Vector3Int pos = new Vector3Int(x, y, z);
 						Vector3Int offsetPos = pos + viewChunk;

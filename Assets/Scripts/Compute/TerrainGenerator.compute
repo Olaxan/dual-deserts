@@ -30,10 +30,27 @@ float caveDistanceMult;
 
 float density(in float3 p)
 {
-	float a = (p.y - surfaceLevel + snoise(p.xz * surfaceScale) * surfaceMagnitude) * surfaceDistanceMult;
-	float b = snoise(p * caveScale) * caveDistanceMult;
+	float depth = p.y - surfaceLevel;
 
-	return max(a, b);
+	float surf = depth;
+	surf += snoise(p.xz * surfaceScale) * surfaceMagnitude;
+	surf += snoise(p.xz * surfaceScale / 5) * surfaceMagnitude * 3;
+	surf *= surfaceDistanceMult;
+
+	float caves = snoise(p * caveScale);
+	caves *= saturate(depth / 100);
+	caves *= 0;
+	caves *= caveDistanceMult;
+
+	return max(surf, caves);
+}
+
+float3 estimateNormal(float3 p) {
+	return normalize(float3(
+		density(float3(p.x + derivativeStep, p.y, p.z)) - density(float3(p.x - derivativeStep, p.y, p.z)),
+		density(float3(p.x, p.y + derivativeStep, p.z)) - density(float3(p.x, p.y - derivativeStep, p.z)),
+		density(float3(p.x, p.y, p.z + derivativeStep)) - density(float3(p.x, p.y, p.z - derivativeStep))
+	));
 }
 
 // for function f(p)
@@ -58,7 +75,7 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 	IsoPoint p;
 
 	p.dist = density(noisePos);
-	p.normal = calculateNormal(noisePos);
+	p.normal = estimateNormal(noisePos);
 
 	#ifdef CLOSE_FIELD
 	if (p.dist <= 0)
