@@ -173,9 +173,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contourGenerator: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  centerBias: 0.5
-  maxCornerDistance: 1
-  clampRange: 2
+  centerBias: 0.25
+  maxCornerDistance: 999
+  clampRange: 999
 --- !u!114 &695777396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,14 +190,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
-  surfaceScale: 0.01
-  surfaceMagnitude: 5
+  surfaceScale: 0.005
+  surfaceMagnitude: 10
   surfaceDistanceMult: 1
   caveScale: 1
   caveDistanceMult: 1
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
-  derivativeStep: 1
+  derivativeStep: 0.0001
 --- !u!114 &695777397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewer: {fileID: 339547606}
-  viewDistance: 3
+  viewDistance: 2
   viewDepth: 2
   worldScale: {x: 1, y: 1, z: 1}
   volumeSize: {x: 64, y: 64, z: 64}
