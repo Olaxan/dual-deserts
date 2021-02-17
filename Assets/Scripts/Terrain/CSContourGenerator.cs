@@ -92,12 +92,14 @@ public class CSContourGenerator : MonoBehaviour
     {
 		int res = data.heightmapResolution - 1;
 		int sqrRes = res * res;
-		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, res, scale);
+		int lodChunks = Mathf.RoundToInt(data.size.x / size.x);
 
-		Debug.Log($"Map size: {res}x{res} ({sqrRes})");
+		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, res, lodChunks);
+
+		Debug.Log($"Map size: {res}x{res} ({sqrRes}), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size.x}");
 
 		float[,] surface = new float[res, res];
-		isoDistBuffer.GetData(surface, 0, 0, sqrRes - 1);
+		isoDistBuffer.GetData(surface, 0, 0, sqrRes);
 
 		data.SetHeights(0, 0, surface);
     }
@@ -116,7 +118,7 @@ public class CSContourGenerator : MonoBehaviour
 				Mathf.CeilToInt(size.y / _threadSizeY), 
 				Mathf.CeilToInt(size.z / _threadSizeZ));
 
-		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.position, size, scale);
+		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.position, size);
 
 		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
 		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });

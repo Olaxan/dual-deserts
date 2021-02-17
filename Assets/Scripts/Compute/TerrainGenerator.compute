@@ -8,6 +8,7 @@
 
 //#define CLOSE_FIELD
 
+
 int3 chunkOffset;
 
 float3 noiseOffset;
@@ -20,6 +21,8 @@ float surfaceScale;
 float surfaceMagnitude;
 
 float caveScale;
+
+uint lodChunks;
 
 float3 rot(float3 coord, float4x4 mat)
 {
@@ -41,18 +44,6 @@ float surface(in float3 p)
 	surf -= uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
 	surf -= uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
 	surf -= uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
-
-	return surf;
-}
-
-float buli(in float3 p)
-{
-	float surf = p.y + surfaceLevel;
-	surf += uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
-	surf += uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
-	surf += uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
-	surf += uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
-	surf += uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
 
 	return surf;
 }
@@ -153,5 +144,6 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 
 	int idx = id.x + isoSize.x * id.y;
 
-	isoDists[idx] = (buli(noisePos / 8.0) / 1.5) / (surfaceMagnitude * 16.0);
+	// 64 = 2048 / 32 (32 = isoSize)
+	isoDists[idx] = abs(surface(lodChunks * noisePos / 4.0)) / (surfaceMagnitude * 2);
 }

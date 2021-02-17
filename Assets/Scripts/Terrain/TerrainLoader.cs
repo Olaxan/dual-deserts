@@ -10,12 +10,14 @@ public class TerrainLoader : MonoBehaviour
 
 	public int viewDistance = 3;
 	public int viewDepth = 1;
+	public int lodChunks = 32;
 	public Vector3 worldScale = Vector3.one;
 	public Vector3Int volumeSize = new Vector3Int(16, 16, 16);
 
 	public Material defaultMaterial;
 	public Terrain distantTerrain;
 
+	CSGenerator terrainGenerator;
 	CSContourGenerator contourGenerator;
 
 	List<Chunk> chunks;
@@ -39,8 +41,13 @@ public class TerrainLoader : MonoBehaviour
 		unloadedChunks = new Queue<Chunk>();
 		loadedChunks = new Dictionary<Vector3Int, Chunk>();
 
-		contourGenerator = gameObject.GetComponent<CSContourGenerator>();		
+		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
+		terrainGenerator = gameObject.GetComponent<CSGenerator>();
+
 		contourGenerator.Setup(volumeSize, worldScale);
+
+		float w = lodChunks * volumeSize.x;
+		distantTerrain.terrainData.size = new Vector3(w, terrainGenerator.surfaceMagnitude, w);
 	}
 
 	Chunk AddChunk()
