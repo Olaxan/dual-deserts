@@ -1,3 +1,6 @@
+#ifndef _FUNCTIONS_CGINC_
+#define _FUNCTIONS_CGINC_
+
 float dot2( in float2 v ) { return dot(v,v); }
 float dot2( in float3 v ) { return dot(v,v); }
 float ndot( in float2 a, in float2 b ) { return a.x*b.x - a.y*b.y; }
@@ -336,3 +339,5 @@ float udQuad(float3 p, float3 a, float3 b, float3 c, float3 d )
 		 :
 		 dot(nor,pa)*dot(nor,pa)/dot2(nor) );
 }
+
+#endif

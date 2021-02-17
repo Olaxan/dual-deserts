@@ -1,3 +1,6 @@
+#ifndef _TABLES_CGINC_
+#define _TABLES_CGINC_
+
 static const int numCorners = 8;
 static const int numAxes = 3;
 static const int numEdges = 12;
@@ -56,3 +59,5 @@ static int3 neighbours[numNeighbours] =
 	int3(1,0,1),
 	int3(1,1,0)
 };
+
+#endif

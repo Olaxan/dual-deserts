@@ -1,4 +1,7 @@
-﻿struct IsoPoint
+﻿#ifndef _VOLUME_CGINC_
+#define _VOLUME_CGINC_
+
+struct IsoPoint
 {
 	float dist;
 	float3 normal;
@@ -24,3 +27,5 @@ bool isBorder(int3 id)
 {
 	return (id.x * id.y * id.z == 0) || checkEdge(id, 1);
 }
+
+#endif
