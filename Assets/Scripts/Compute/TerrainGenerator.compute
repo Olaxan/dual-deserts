@@ -22,7 +22,9 @@ float surfaceMagnitude;
 
 float caveScale;
 
+uint3 lodSize;
 uint lodChunks;
+
 
 float3 rot(float3 coord, float4x4 mat)
 {
@@ -90,7 +92,8 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 {
 	int index = getVolumeIndex(id);
 	int3 pos = int3(id) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
-	float3 noisePos = (float3(pos) + noiseOffset) * noiseScale;
+	//float3 noisePos = (float3(pos) + noiseOffset) * noiseScale;
+	float3 noisePos = (float3(pos)) * noiseScale;
 
 	float d = density(noisePos);
 	float3 n = calcNormal(noisePos);
@@ -139,11 +142,12 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 {
 
+	uint d = lodChunks / 4;
 	float3 pos = float3(id.x, 0, id.y) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
-	float3 noisePos = (pos + noiseOffset) * noiseScale;
+	float3 lodOffset = float3(lodSize.x, 0, lodSize.z) / d;
+	float3 noisePos = (pos + noiseOffset - lodOffset) * noiseScale;
 
 	int idx = id.x + isoSize.x * id.y;
 
-	// 64 = 2048 / 32 (32 = isoSize)
-	isoDists[idx] = abs(surface(lodChunks * noisePos / 4.0)) / (surfaceMagnitude * 2);
+	isoDists[idx] = abs(surface(noisePos * d)) / (surfaceMagnitude * 2);
 }

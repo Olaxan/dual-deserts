@@ -48,6 +48,7 @@ public class TerrainLoader : MonoBehaviour
 
 		float w = lodChunks * volumeSize.x;
 		distantTerrain.terrainData.size = new Vector3(w, terrainGenerator.surfaceMagnitude, w);
+		distantTerrain.transform.Translate(new Vector3(-w / 2, 0, -w / 2));
 	}
 
 	Chunk AddChunk()

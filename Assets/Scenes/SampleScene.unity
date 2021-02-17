@@ -278,8 +278,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
-  surfaceScale: 0.0005
-  surfaceMagnitude: 250
+  surfaceScale: 0.001
+  surfaceMagnitude: 100
   caveScale: 1
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
@@ -299,7 +299,7 @@ MonoBehaviour:
   viewer: {fileID: 1262800637}
   viewDistance: 4
   viewDepth: 2
-  lodChunks: 32
+  lodChunks: 64
   worldScale: {x: 0.5, y: 0.5, z: 0.5}
   volumeSize: {x: 64, y: 64, z: 64}
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}

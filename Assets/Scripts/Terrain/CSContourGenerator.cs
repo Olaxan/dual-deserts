@@ -94,7 +94,7 @@ public class CSContourGenerator : MonoBehaviour
 		int sqrRes = res * res;
 		int lodChunks = Mathf.RoundToInt(data.size.x / size.x);
 
-		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, res, lodChunks);
+		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, Vector3Int.RoundToInt(data.size), res, lodChunks);
 
 		Debug.Log($"Map size: {res}x{res} ({sqrRes}), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size.x}");
 
