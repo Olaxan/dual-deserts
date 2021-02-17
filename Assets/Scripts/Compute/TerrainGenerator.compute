@@ -29,21 +29,33 @@ float3 rot(float3 coord, float4x4 mat)
 				  dot(mat._31_32_33, coord));
 }
 
+float uSNoise(in float2 p)
+{
+	return (1.0 + snoise(p)) / 2.0;
+}
+
+float surface(in float3 p)
+{
+	float surf = p.y - surfaceLevel;
+	surf -= uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
+	surf -= uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
+	surf -= uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
+	surf -= uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
+	surf -= uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+
+	return surf;
+}
+
 float density(in float3 p)
 {
 
-	float surf = p.y;
-	surf += snoise(p.xz * surfaceScale) * surfaceMagnitude;
-	surf += snoise(p.xz * surfaceScale * 1.96) * surfaceMagnitude / 2.13;
-	surf += snoise(p.xz * surfaceScale * 4.13) * surfaceMagnitude / 3.96;
-	surf += snoise(p.xz * surfaceScale * 7.98) * surfaceMagnitude / 8.11;
-	surf += snoise(p.xz * surfaceScale * 16.11) * surfaceMagnitude / 15.96;
+	float d = surface(p);
 
 	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
 	float torus = sdTorus(p, float2(50, 5));
 	float cyl = sdCappedCylinder(p, 25, 25);
 
-	float a = smin(surf, cube, 10).x;
+	float a = smin(d, cube, 10).x;
 	float b = smin(a, torus, 10).x;
 	float c = smin(b, cyl, 10).x;
 

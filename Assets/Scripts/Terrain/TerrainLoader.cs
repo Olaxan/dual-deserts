@@ -14,6 +14,7 @@ public class TerrainLoader : MonoBehaviour
 	public Vector3Int volumeSize = new Vector3Int(16, 16, 16);
 
 	public Material defaultMaterial;
+	public Terrain distantTerrain;
 
 	CSContourGenerator contourGenerator;
 
@@ -117,7 +118,7 @@ public class TerrainLoader : MonoBehaviour
 					newChunk.Refresh(offsetPos, chunkOffset);
 					loadedChunks.Add(offsetPos, newChunk);
 					chunks.Add(newChunk);
-					contourGenerator.RequestRemesh(newChunk);
+					contourGenerator.RequestRemesh(newChunk, posSqrDist);
 
 				}
 			}
@@ -131,7 +132,17 @@ public class TerrainLoader : MonoBehaviour
 
 	public void UpdateAll()
 	{
+		Vector3 viewPos = viewer.position;
+		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
+		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
+		Vector3Int viewChunk = new Vector3Int(
+				Mathf.RoundToInt(viewPos.x / scaleSize.x),
+				Mathf.RoundToInt(viewPos.y / scaleSize.y),
+				Mathf.RoundToInt(viewPos.z / scaleSize.z));
+
 		foreach (Chunk chunk in chunks)
-			contourGenerator.RequestRemesh(chunk);
+		{
+			contourGenerator.RequestRemesh(chunk, (chunk.position - viewChunk).sqrMagnitude);
+		}
 	}
 }

@@ -584,8 +584,8 @@ Material:
     - _ShowTexture: 1
     - _ShowTop: 1
     - _Smoothness: 0.371
-    - _Smoothness0: 0.577
-    - _Smoothness1: 0.581
+    - _Smoothness0: 0
+    - _Smoothness1: 0.33
     - _Smoothness2: 0.5
     - _Smoothness3: 0.5
     - _SmoothnessRemapMax: 1

@@ -27,7 +27,7 @@ public class CSContourGenerator : MonoBehaviour
 	ComputeBuffer quadCountBuffer;
 	ComputeBuffer vertexCountBuffer;
 
-	Queue<Chunk> buildQueue;
+	PriorityQueue<Chunk, int> buildQueue;
 
 	int _vertexKernel;
 	int _triangleKernel;
@@ -70,7 +70,7 @@ public class CSContourGenerator : MonoBehaviour
 		contourGenerator.GetKernelThreadGroupSizes(_vertexKernel, 
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 
-		buildQueue = new Queue<Chunk>();
+		buildQueue = new PriorityQueue<Chunk, int>();
 
 		size = isoSize;
 		scale = isoScale;
@@ -79,10 +79,10 @@ public class CSContourGenerator : MonoBehaviour
 
 	}
 
-	public void RequestRemesh(Chunk chunk)
+	public void RequestRemesh(Chunk chunk, int priority)
 	{
 		chunk.gameObject.SetActive(false);
-		buildQueue.Enqueue(chunk);
+		buildQueue.Enqueue(chunk, priority);
 	}
 
 	void GenerateChunk(Chunk chunk)
