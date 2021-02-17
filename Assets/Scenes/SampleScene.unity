@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.13966529, g: 0.14322387, b: 0.10908981, a: 1}
+  m_IndirectSpecularColor: {r: 0.203973, g: 0.15885401, b: 0.12289068, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -279,7 +279,7 @@ MonoBehaviour:
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
   surfaceScale: 0.001
-  surfaceMagnitude: 100
+  surfaceMagnitude: 50
   caveScale: 1
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
@@ -297,7 +297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewer: {fileID: 1262800637}
-  viewDistance: 4
+  viewDistance: 2
   viewDepth: 2
   lodChunks: 64
   worldScale: {x: 0.5, y: 0.5, z: 0.5}
