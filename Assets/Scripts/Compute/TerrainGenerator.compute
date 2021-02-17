@@ -39,13 +39,13 @@ float density(in float3 p)
 	surf += snoise(p.xz * surfaceScale * 7.98) * surfaceMagnitude / 8.11;
 	surf += snoise(p.xz * surfaceScale * 16.11) * surfaceMagnitude / 15.96;
 
-	float cube = sdRoundBox(p, float3(5, 5, 10), 2.0);
-	float torus = sdTorus(p, float2(12, 2));
-	float cyl = sdCappedCylinder(p, 5, 15);
+	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
+	float torus = sdTorus(p, float2(50, 5));
+	float cyl = sdCappedCylinder(p, 25, 25);
 
-	float a = smin(surf, cube, 1).x;
-	float b = smin(a, torus, 1).x;
-	float c = smin(b, cyl, 1).x;
+	float a = smin(surf, cube, 10).x;
+	float b = smin(a, torus, 10).x;
+	float c = smin(b, cyl, 10).x;
 
 	return c;
 
