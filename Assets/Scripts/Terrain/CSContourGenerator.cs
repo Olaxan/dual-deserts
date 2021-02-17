@@ -20,6 +20,7 @@ public class CSContourGenerator : MonoBehaviour
 	ComputeBuffer isoBuffer;
 	ComputeBuffer indexBuffer;
 	ComputeBuffer vertexBuffer;
+	ComputeBuffer normalBuffer;
 	ComputeBuffer quadBuffer;
 	ComputeBuffer quadCountBuffer;
 	ComputeBuffer vertexCountBuffer;
@@ -74,6 +75,7 @@ public class CSContourGenerator : MonoBehaviour
 
 	public void RequestRemesh(Chunk chunk)
 	{
+		chunk.gameObject.SetActive(false);
 		buildQueue.Enqueue(chunk);
 	}
 
@@ -117,10 +119,12 @@ public class CSContourGenerator : MonoBehaviour
 		int vertexCount = vertexCountArray[0];
 
 		Vector3[] vertices = new Vector3[vertexCount];
+		Vector3[] normals = new Vector3[vertexCount];
 		int[] triangles = new int[2 * 3 * quadCount];
 
 		quadBuffer.GetData(triangles);
 		vertexBuffer.GetData(vertices);
+		normalBuffer.GetData(normals);
 
 		Mesh contour = chunk.contour;
 
@@ -130,8 +134,7 @@ public class CSContourGenerator : MonoBehaviour
 		contour.Clear();
 		contour.vertices = vertices;
 		contour.triangles = triangles;
-		contour.RecalculateNormals();
-		contour.RecalculateTangents();
+		contour.normals = normals;
 
 		chunk.UpdateCollider();
 	}
@@ -149,6 +152,7 @@ public class CSContourGenerator : MonoBehaviour
 		isoBuffer = new ComputeBuffer(pointCount, 4 * sizeof(float));
 		indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
 		vertexBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float), ComputeBufferType.Counter);
+		normalBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float));
 		quadBuffer = new ComputeBuffer(indexCount * 3, 2 * 3 * sizeof(int), ComputeBufferType.Append);
 		quadCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 		vertexCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
@@ -156,6 +160,7 @@ public class CSContourGenerator : MonoBehaviour
 		contourGenerator.SetBuffer(_vertexKernel, "iso", isoBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "indices", indexBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "vertices", vertexBuffer);
+		contourGenerator.SetBuffer(_vertexKernel, "normals", normalBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "quads", quadBuffer);
 
 		contourGenerator.SetBuffer(_triangleKernel, "iso", isoBuffer);
@@ -174,6 +179,9 @@ public class CSContourGenerator : MonoBehaviour
 		if (vertexBuffer != null)
 			vertexBuffer.Release();
 
+		if (normalBuffer != null)
+			normalBuffer.Release();
+
 		if (quadBuffer != null)
 			quadBuffer.Release();
 
@@ -186,6 +194,7 @@ public class CSContourGenerator : MonoBehaviour
 		isoBuffer = null;
 		indexBuffer = null;
 		vertexBuffer = null;
+		normalBuffer = null;
 		quadBuffer = null;
 		quadCountBuffer = null;
 		vertexCountBuffer = null;

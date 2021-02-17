@@ -4,6 +4,8 @@
 #include "/Includes/Volume.cginc"
 #include "/Includes/Tables.cginc"
 
+#define CENTER_BIAS
+
 static const int xyNumThreads = 8;
 
 struct Quad 
@@ -14,6 +16,7 @@ struct Quad
 
 RWStructuredBuffer<int> indices;
 RWStructuredBuffer<float3> vertices;
+RWStructuredBuffer<float3> normals;
 AppendStructuredBuffer<Quad> quads;
 
 int LOD;
@@ -44,7 +47,7 @@ bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
 		determinant(float3x3(A[0], A[1], b))
 	) / det;
 
-	return true;
+	return !(any(isnan(vertex)) || any(isinf(vertex)));
 }
 
 bool SolveError(in int N, in float3 A[numPoints], in float b[numPoints], out float3 vertex)
@@ -147,6 +150,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 
 	float3 voxelCenter = float3(id) + float3(0.5, 0.5, 0.5);
 
+#ifdef CENTER_BIAS
 	for (int ai = 0; ai < numAxes; ai++)
 	{
 		IsoPoint p;
@@ -155,12 +159,18 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 		p.normal = n;
 		points[pointCount++] = p;
 	}
+#endif
 
+	float3 avgNormal = float3(0, 0, 0);
 	for (int pi = 0; pi < pointCount; pi++)
 	{
-		A[pi] = points[pi].normal;
+		float3 norm = points[pi].normal;
+		avgNormal += norm;
+		A[pi] = norm;
 		b[pi] = points[pi].dist;
 	}
+
+	avgNormal /= float(pointCount);
 
 	float3 vertex;
 	if (SolveError(pointCount, A, b, vertex))
@@ -174,6 +184,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 
 	int idx = vertices.IncrementCounter();
 	vertices[idx] = vertex;
+	normals[idx] = avgNormal;
 	indices[index] = idx;
 }
 

@@ -121,12 +121,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!4 &339547606 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
-    type: 3}
-  m_PrefabInstance: {fileID: 942311515}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &695777391
 GameObject:
   m_ObjectHideFlags: 0
@@ -190,8 +184,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
-  surfaceScale: 0.005
-  surfaceMagnitude: 10
+  surfaceScale: 0.0025
+  surfaceMagnitude: 15
   surfaceDistanceMult: 1
   caveScale: 1
   caveDistanceMult: 1
@@ -210,10 +204,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 442cca10c3461a076b5c28ca79b2bbe9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewer: {fileID: 339547606}
+  viewer: {fileID: 1262800637}
   viewDistance: 2
   viewDepth: 2
-  worldScale: {x: 1, y: 1, z: 1}
+  worldScale: {x: 0.5, y: 0.5, z: 0.5}
   volumeSize: {x: 64, y: 64, z: 64}
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
 --- !u!1 &705507993
@@ -255,7 +249,7 @@ Light:
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
-    m_Bias: 0.05
+    m_Bias: 0.5
     m_NormalBias: 0.4
     m_NearPlane: 0.2
     m_CullingMatrixOverride:
@@ -458,6 +452,11 @@ PrefabInstance:
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 20724644957976244, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+        type: 3}
+      propertyPath: near clip plane
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 114051214696948948, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
         type: 3}

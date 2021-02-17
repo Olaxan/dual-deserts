@@ -58,8 +58,7 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloat("derivativeStep", derivativeStep);
 
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
-		terrainShader.SetFloats("noiseScale",
-			new float[] { noiseScale.x * scale.x, noiseScale.y * scale.y, noiseScale.z * scale.z });
+		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
 
 		terrainShader.SetBuffer(_generatorKernel, "iso", isoBuffer);
 

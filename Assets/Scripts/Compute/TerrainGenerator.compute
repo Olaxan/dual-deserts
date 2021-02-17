@@ -7,13 +7,6 @@
 
 //#define CLOSE_FIELD
 
-static uint2 oa[3] = 
-{
-	uint2(1,2),
-	uint2(0,2),
-	uint2(0,1)
-};
-
 int3 chunkOffset;
 
 float3 noiseOffset;
@@ -29,21 +22,30 @@ float surfaceDistanceMult;
 float caveScale;
 float caveDistanceMult;
 
+float3 rot(float3 coord, float4x4 mat)
+{
+	return float3(dot(mat._11_12_13, coord),	// 3x3 transform,
+				  dot(mat._21_22_23, coord),	// no translation
+				  dot(mat._31_32_33, coord));
+}
+
 float density(in float3 p)
 {
 
 	float surf = p.y;
 	surf += snoise(p.xz * surfaceScale) * surfaceMagnitude;
-	surf += snoise(p.xz * surfaceScale * 2.0) * surfaceMagnitude / 2.0;
-	surf += snoise(p.xz * surfaceScale * 4.0) * surfaceMagnitude / 4.0;
+	surf += snoise(p.xz * surfaceScale * 1.96) * surfaceMagnitude / 2.13;
+	surf += snoise(p.xz * surfaceScale * 4.13) * surfaceMagnitude / 3.96;
+	surf += snoise(p.xz * surfaceScale * 7.98) * surfaceMagnitude / 8.11;
+	surf += snoise(p.xz * surfaceScale * 16.11) * surfaceMagnitude / 15.96;
 
 	float cube = sdRoundBox(p, float3(5, 5, 10), 2.0);
 	float torus = sdTorus(p, float2(12, 2));
 	float cyl = sdCappedCylinder(p, 5, 15);
 
-	float a = smin(surf, cube, 5).x;
-	float b = smin(a, torus, 5).x;
-	float c = smin(b, cyl, 5).x;
+	float a = smin(surf, cube, 1).x;
+	float b = smin(a, torus, 1).x;
+	float c = smin(b, cyl, 1).x;
 
 	return c;
 
@@ -116,9 +118,6 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 		}
 	}
 	#endif
-
-	//p.dist = float(id.y) - floorLevel;
-	//p.normal = float3(0, sign(p.dist), 0);
 
 	iso[index] = p;
 }
