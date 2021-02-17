@@ -39,7 +39,7 @@ public class TerrainLoader : MonoBehaviour
 		unloadedChunks = new Queue<Chunk>();
 		loadedChunks = new Dictionary<Vector3Int, Chunk>();
 
-		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
+		contourGenerator = gameObject.GetComponent<CSContourGenerator>();		
 		contourGenerator.Setup(volumeSize, worldScale);
 	}
 
@@ -144,5 +144,17 @@ public class TerrainLoader : MonoBehaviour
 		{
 			contourGenerator.RequestRemesh(chunk, (chunk.position - viewChunk).sqrMagnitude);
 		}
+	}
+
+	public void UpdateDistantTerrain()
+    {
+		Vector3 viewPos = viewer.position;
+		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
+		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
+		Vector2Int viewChunk = new Vector2Int(
+				Mathf.RoundToInt(viewPos.x / scaleSize.x),
+				Mathf.RoundToInt(viewPos.z / scaleSize.z));
+		
+		contourGenerator.SurfaceRemesh(distantTerrain.terrainData, viewChunk);
 	}
 }

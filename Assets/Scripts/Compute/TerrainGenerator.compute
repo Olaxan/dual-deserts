@@ -1,4 +1,5 @@
 ﻿#pragma kernel CSGenerator
+#pragma kernel CSSurfaceGenerator
 
 #include "/Includes/Volume.cginc"
 #include "/Includes/Tables.cginc"
@@ -17,10 +18,8 @@ float derivativeStep;
 float surfaceLevel;
 float surfaceScale;
 float surfaceMagnitude;
-float surfaceDistanceMult;
 
 float caveScale;
-float caveDistanceMult;
 
 float3 rot(float3 coord, float4x4 mat)
 {
@@ -42,6 +41,18 @@ float surface(in float3 p)
 	surf -= uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
 	surf -= uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
 	surf -= uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+
+	return surf;
+}
+
+float buli(in float3 p)
+{
+	float surf = p.y + surfaceLevel;
+	surf += uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
+	surf += uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
+	surf += uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
+	surf += uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
+	surf += uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
 
 	return surf;
 }
@@ -90,46 +101,57 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 	int3 pos = int3(id) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
 	float3 noisePos = (float3(pos) + noiseOffset) * noiseScale;
 
-	IsoPoint p;
-
-	p.dist = density(noisePos);
-	p.normal = calcNormal2(noisePos);
+	float d = density(noisePos);
+	float3 n = calcNormal(noisePos);
 
 	#ifdef CLOSE_FIELD
-	if (p.dist <= 0)
+	if (d <= 0)
 	{
 		if (id.x == 0)
 		{
-			p.dist = 0.5;
-			p.normal = -axes[0];
+			d = 0.5;
+			n = -axes[0];
 		}
 		else if (id.y == 0)
 		{
-			p.dist = 0.5;
-			p.normal = -axes[1];
+			d = 0.5;
+			n = -axes[1];
 		}
 		else if (id.z == 0)
 		{
-			p.dist = 0.5;
-			p.normal = -axes[2];
+			d = 0.5;
+			n = -axes[2];
 		}
 		else if (id.x == isoSize.x - 2)
 		{
-			p.dist = 0.5;
-			p.normal = axes[0];
+			d = 0.5;
+			n = axes[0];
 		}
 		else if (id.y == isoSize.y - 2)
 		{
-			p.dist = 0.5;
-			p.normal = axes[1];
+			d = 0.5;
+			n = axes[1];
 		}
 		else if (id.z == isoSize.z - 2)
 		{
-			p.dist = 0.5;
-			p.normal = axes[2];
+			d = 0.5;
+			n = axes[2];
 		}
 	}
 	#endif
 
-	iso[index] = p;
+	isoDists[index] = d;
+	isoNormals[index] = n;
+}
+
+[numthreads(8, 8, 1)]
+void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
+{
+
+	float3 pos = float3(id.x, 0, id.y) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
+	float3 noisePos = (pos + noiseOffset) * noiseScale;
+
+	int idx = id.x + isoSize.x * id.y;
+
+	isoDists[idx] = (buli(noisePos / 8.0) / 1.5) / (surfaceMagnitude * 16.0);
 }

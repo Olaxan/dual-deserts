@@ -106,7 +106,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 
 	for (int ci = 0; ci < numCorners; ci++)
 	{
-		inside[ci] = (iso[getVolumeIndex(id + corners[ci])].dist <= 0);
+		inside[ci] = (isoDists[getVolumeIndex(id + corners[ci])] <= 0);
 		if (inside[ci])
 			numInside++;
 	}
@@ -125,7 +125,9 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 		}
 	}
 
-	IsoPoint points[numPoints];
+	float dists[numPoints];
+	float3 norms[numPoints];
+
 	float3 A[numPoints];
 	float b[numPoints];
 
@@ -134,18 +136,20 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	for (int cj = 0; cj < numCorners; cj++)
 	{
 		uint3 n_pos = id + corners[cj];
-		IsoPoint n_point = iso[getVolumeIndex(n_pos)];
+		float n_dist = isoDists[getVolumeIndex(n_pos)];
+		float3 n_norm = isoNormals[getVolumeIndex(n_pos)];
 
 		if (!crossingCorners[cj])
 			continue;
 
-		if (abs(n_point.dist) > maxCornerDistance)
+		if (abs(n_dist) > maxCornerDistance)
 			continue;
 
-		IsoPoint p;
-		p.dist = dot(n_point.normal, float3(n_pos)) - n_point.dist;
-		p.normal = n_point.normal;
-		points[pointCount++] = p;
+		float d = dot(n_norm, float3(n_pos)) - n_dist;
+		float3 n = n_norm;
+		dists[pointCount] = d;
+		norms[pointCount] = n;
+		pointCount++;
 	}
 
 	float3 voxelCenter = float3(id) + float3(0.5, 0.5, 0.5);
@@ -153,21 +157,21 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 #ifdef CENTER_BIAS
 	for (int ai = 0; ai < numAxes; ai++)
 	{
-		IsoPoint p;
-		float3 n = centerBias * float3(axes[ai]);
-		p.dist = dot(n, voxelCenter);
-		p.normal = n;
-		points[pointCount++] = p;
+		float3 n2 = centerBias * float3(axes[ai]);
+		float d2 = dot(n2, voxelCenter);
+		dists[pointCount] = d2;
+		norms[pointCount] = n2;
+		pointCount++;
 	}
 #endif
 
 	float3 avgNormal = float3(0, 0, 0);
 	for (int pi = 0; pi < pointCount; pi++)
 	{
-		float3 norm = points[pi].normal;
+		float3 norm = norms[pi];
 		avgNormal += norm;
 		A[pi] = norm;
-		b[pi] = points[pi].dist;
+		b[pi] = dists[pi];
 	}
 
 	avgNormal /= float(pointCount);
@@ -203,7 +207,7 @@ void CSMakeTriangles(uint3 id : SV_DispatchThreadID)
 	bool inside[numCorners] = { false, false, false, false, false, false, false, false };
 
 	for (int ci = 0; ci < numCorners; ci++)
-		inside[ci] = (iso[getVolumeIndex(id + corners[ci])].dist <= 0);
+		inside[ci] = (isoDists[getVolumeIndex(id + corners[ci])] <= 0);
 
 	for (int ai = 0; ai < numFarEdges; ai++)
 	{

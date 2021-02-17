@@ -11,9 +11,10 @@ public class TerrainLoaderInspector : Editor
 		DrawDefaultInspector();
 
 		if (GUILayout.Button("Remesh All"))
-		{
 			loader.UpdateAll();
-		}
+
+		if (GUILayout.Button("Update Distant"))
+			loader.UpdateDistantTerrain();
 		
 	}
 }

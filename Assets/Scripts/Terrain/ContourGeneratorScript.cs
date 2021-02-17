@@ -79,12 +79,12 @@ public class ContourGeneratorScript : MonoBehaviour
 		var iso = new Array3<IsoPoint>(size);
 		var mesh = new VoxelMesh(size);
 
-		var buf = terrainGenerator.CreateIsoBuffer(size);
-		terrainGenerator.Generate(buf, Vector3Int.zero, size, Vector3.one);
-		IsoPoint[] isoArr = new IsoPoint[size.x * size.y * size.z];
-		buf.GetData(isoArr);
-		iso.Data = isoArr;
-		buf.Release();
+		//var buf = terrainGenerator.CreateIsoBuffer(size);
+		//terrainGenerator.Generate(buf, Vector3Int.zero, size, Vector3.one);
+		//IsoPoint[] isoArr = new IsoPoint[size.x * size.y * size.z];
+		//buf.GetData(isoArr);
+		//iso.Data = isoArr;
+		//buf.Release();
 
 		Debug.Log(iso.Count);
 

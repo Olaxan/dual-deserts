@@ -1,13 +1,9 @@
 ﻿#ifndef _VOLUME_CGINC_
 #define _VOLUME_CGINC_
 
-struct IsoPoint
-{
-	float dist;
-	float3 normal;
-};
 
-RWStructuredBuffer<IsoPoint> iso;
+RWStructuredBuffer<float> isoDists;
+RWStructuredBuffer<float3> isoNormals;
 
 int3 isoSize;
 

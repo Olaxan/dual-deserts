@@ -19,11 +19,14 @@ public class CSContourGenerator : MonoBehaviour
 	Vector3Int size;
 	Vector3 scale;
 
-	ComputeBuffer isoBuffer;
+	ComputeBuffer isoDistBuffer;
+	ComputeBuffer isoNormalBuffer;
+
 	ComputeBuffer indexBuffer;
 	ComputeBuffer vertexBuffer;
 	ComputeBuffer normalBuffer;
 	ComputeBuffer quadBuffer;
+
 	ComputeBuffer quadCountBuffer;
 	ComputeBuffer vertexCountBuffer;
 
@@ -85,6 +88,20 @@ public class CSContourGenerator : MonoBehaviour
 		buildQueue.Enqueue(chunk, priority);
 	}
 
+	public void SurfaceRemesh(TerrainData data, Vector2Int chunk)
+    {
+		int res = data.heightmapResolution - 1;
+		int sqrRes = res * res;
+		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, res, scale);
+
+		Debug.Log($"Map size: {res}x{res} ({sqrRes})");
+
+		float[,] surface = new float[res, res];
+		isoDistBuffer.GetData(surface, 0, 0, sqrRes - 1);
+
+		data.SetHeights(0, 0, surface);
+    }
+
 	void GenerateChunk(Chunk chunk)
 	{
 
@@ -99,7 +116,7 @@ public class CSContourGenerator : MonoBehaviour
 				Mathf.CeilToInt(size.y / _threadSizeY), 
 				Mathf.CeilToInt(size.z / _threadSizeZ));
 
-		terrainGenerator.Generate(isoBuffer, chunk.position, size, scale);
+		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.position, size, scale);
 
 		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
 		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });
@@ -155,29 +172,37 @@ public class CSContourGenerator : MonoBehaviour
 
 		ReleaseBuffers();
 
-		isoBuffer = new ComputeBuffer(pointCount, 4 * sizeof(float));
+		isoDistBuffer = new ComputeBuffer(pointCount, sizeof(float));
+		isoNormalBuffer = new ComputeBuffer(pointCount, 3 * sizeof(float));
+
 		indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
 		vertexBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float), ComputeBufferType.Counter);
 		normalBuffer = new ComputeBuffer(indexCount, 3 * sizeof(float));
 		quadBuffer = new ComputeBuffer(indexCount * 3, 2 * 3 * sizeof(int), ComputeBufferType.Append);
+
 		quadCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 		vertexCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
 
-		contourGenerator.SetBuffer(_vertexKernel, "iso", isoBuffer);
+		contourGenerator.SetBuffer(_vertexKernel, "isoDists", isoDistBuffer);
+		contourGenerator.SetBuffer(_vertexKernel, "isoNormals", isoNormalBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "indices", indexBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "vertices", vertexBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "normals", normalBuffer);
 		contourGenerator.SetBuffer(_vertexKernel, "quads", quadBuffer);
 
-		contourGenerator.SetBuffer(_triangleKernel, "iso", isoBuffer);
+		contourGenerator.SetBuffer(_triangleKernel, "isoDists", isoDistBuffer);
+		contourGenerator.SetBuffer(_triangleKernel, "isoNormals", isoNormalBuffer);
 		contourGenerator.SetBuffer(_triangleKernel, "indices", indexBuffer);
 		contourGenerator.SetBuffer(_triangleKernel, "quads", quadBuffer);
 	}
 
 	void ReleaseBuffers()
 	{
-		if (isoBuffer != null)
-			isoBuffer.Release();
+		if (isoDistBuffer != null)
+			isoDistBuffer.Release();
+		
+		if (isoNormalBuffer != null)
+			isoNormalBuffer.Release();
 
 		if (indexBuffer != null)
 			indexBuffer.Release();
@@ -197,7 +222,8 @@ public class CSContourGenerator : MonoBehaviour
 		if (vertexCountBuffer != null)
 			vertexCountBuffer.Release();
 
-		isoBuffer = null;
+		isoDistBuffer = null;
+		isoNormalBuffer = null;
 		indexBuffer = null;
 		vertexBuffer = null;
 		normalBuffer = null;
