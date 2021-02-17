@@ -12,6 +12,8 @@ public class CSContourGenerator : MonoBehaviour
 	public float maxCornerDistance;
 	public float clampRange;
 
+	public int chunksPerFrame = 1;
+
 	CSGenerator terrainGenerator;
 
 	Vector3Int size;
@@ -38,12 +40,16 @@ public class CSContourGenerator : MonoBehaviour
 
 	void Update()
 	{
-		if (buildQueue.Count > 0)
+		for (int i = 0; i < chunksPerFrame; i++)
 		{
-			Chunk chunk = buildQueue.Dequeue();
-			chunk.contour.Clear();
-			GenerateChunk(chunk);
-			chunk.gameObject.SetActive(true);
+			if (buildQueue.Count > 0)
+			{
+				Chunk chunk = buildQueue.Dequeue();
+				chunk.contour.Clear();
+				GenerateChunk(chunk);
+				chunk.gameObject.SetActive(true);
+			}
+			else return;
 		}
 	}
 

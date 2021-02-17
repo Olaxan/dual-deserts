@@ -170,6 +170,7 @@ MonoBehaviour:
   centerBias: 0.25
   maxCornerDistance: 999
   clampRange: 999
+  chunksPerFrame: 1
 --- !u!114 &695777396
 MonoBehaviour:
   m_ObjectHideFlags: 0
