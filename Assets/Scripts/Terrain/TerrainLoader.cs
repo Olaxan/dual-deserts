@@ -58,8 +58,6 @@ public class TerrainLoader : MonoBehaviour
 		chunkComp.defaultMaterial = defaultMaterial;
 		chunkComp.Setup();
 
-		Debug.Log($"Adding chunk to pool (count = {chunks.Count})");
-
 		return chunkComp;
 	}
 
