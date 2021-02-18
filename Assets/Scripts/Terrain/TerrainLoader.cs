@@ -163,7 +163,9 @@ public class TerrainLoader : MonoBehaviour
 			float w = lodChunks * volumeSize.x;
 
 			contourGenerator.SurfaceRemesh(distantTerrain.terrainData, viewChunk);
-			distantTerrain.transform.SetPositionAndRotation(new Vector3(viewChunk.x * scaleSize.x - w / 2, 0, viewChunk.y * scaleSize.z - w / 2), Quaternion.identity);
+			distantTerrain.transform.SetPositionAndRotation(
+					new Vector3(viewChunk.x * scaleSize.x - w / 2, 0, viewChunk.y * scaleSize.z - w / 2), 
+					Quaternion.identity);
 		}
 	}
 

@@ -65,7 +65,7 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
 	}
 
-	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, Vector3Int size, int res, int lodChunks)
+	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, Vector3Int size, int res, int lodChunksPerAxis)
 	{
 		SetUniforms();
 
@@ -74,7 +74,8 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, 0, chunk.y });
 		terrainShader.SetInts("isoSize", new int[] { res, 1, res });
 		terrainShader.SetInts("lodSize", new int[] { size.x, size.y, size.z });
-		terrainShader.SetInt("lodChunks", lodChunks);
+		terrainShader.SetInt("lodRes", res);
+		terrainShader.SetInt("lodChunksPerAxis", lodChunksPerAxis);
 
 		terrainShader.SetBuffer(_surfaceGeneratorKernel, "isoDists", isoDists);
 

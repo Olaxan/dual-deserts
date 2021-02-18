@@ -23,7 +23,8 @@ float surfaceMagnitude;
 float caveScale;
 
 uint3 lodSize;
-uint lodChunks;
+uint lodChunksPerAxis;
+uint lodRes;
 
 
 float3 rot(float3 coord, float4x4 mat)
@@ -91,8 +92,12 @@ float3 calcNormal2(float3 p) {
 void CSGenerator(uint3 id : SV_DispatchThreadID)
 {
 	int index = getVolumeIndex(id);
-	int3 pos = int3(id) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
-	float3 noisePos = (float3(pos) + noiseOffset) * noiseScale;
+
+	// Polygonized chunks are smaller than volume field
+	int3 isoAdjustedSize = int3(isoSize) - int3(2, 2, 2);
+
+	float3 pos = float3(id) + chunkOffset * isoAdjustedSize;
+	float3 noisePos = (pos + noiseOffset) * noiseScale;
 
 	float d = density(noisePos);
 	float3 n = calcNormal(noisePos);
@@ -141,12 +146,23 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 {
 
-	uint d = lodChunks / 4;
-	float3 pos = float3(id.x, 0, id.y) + (chunkOffset * (int3(isoSize) - int3(2, 2, 2))) * caveScale;
-	float3 lodOffset = float3(lodSize.x, 0, lodSize.z) / d;
-	float3 noisePos = (pos + noiseOffset - lodOffset) * noiseScale;
+	// Polygonized chunks are smaller than volume field
+	int3 isoAdjustedSize = int3(isoSize) - int3(2, 2, 2);
+
+	// Offset heightmap by half its resolution (because player is in center)
+	float3 lodOffset = float3(lodRes / 2, 0, lodRes / 2); 
+
+	// Create a chunk offset position from thread ID
+	float3 pos = float3(id.x, 0, id.y) + (chunkOffset * isoAdjustedSize * caveScale);
+
+	// Put all offsets together
+	float3 offsetPos = (pos + noiseOffset - lodOffset);
+
+	// Step with larger noise values because lod terrain is bigger than a single chunk
+	offsetPos *= lodChunksPerAxis;
+	offsetPos *= noiseScale;
 
 	int idx = id.x + isoSize.x * id.y;
 
-	isoDists[idx] = abs(surface(noisePos * d)) / (surfaceMagnitude * 2);
+	isoDists[idx] = abs(surface(offsetPos)) / (surfaceMagnitude * 2);
 }
