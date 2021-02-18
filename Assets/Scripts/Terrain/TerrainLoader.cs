@@ -24,6 +24,9 @@ public class TerrainLoader : MonoBehaviour
 
 	Vector2Int prevLod = new Vector2Int(-999, -999);
 
+	float LodWidth { get => lodChunks * volumeSize * volumeScale * 2; }
+	float LodHeight { get => terrainGenerator.surfaceMagnitude * volumeScale * 2; }
+
 	CSGenerator terrainGenerator;
 	CSContourGenerator contourGenerator;
 
@@ -60,8 +63,10 @@ public class TerrainLoader : MonoBehaviour
 
 		contourGenerator.Setup(volumeSize, volumeScale);
 
-		float w = lodChunks * volumeSize;
-		distantTerrain.terrainData.size = new Vector3(w, terrainGenerator.surfaceMagnitude, w);
+		float w = LodWidth;
+		float h = LodHeight;
+
+		distantTerrain.terrainData.size = new Vector3(w, h, w);
 		distantTerrain.transform.Translate(new Vector3(-w / 2, 0, -w / 2));
 	}
 
@@ -161,7 +166,7 @@ public class TerrainLoader : MonoBehaviour
         {
 			prevLod = viewChunk;
 
-			float w = lodChunks * volumeSize;
+			float w = LodWidth;
 
 			contourGenerator.SurfaceRemesh(distantTerrain.terrainData, viewChunk);
 

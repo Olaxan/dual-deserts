@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.22313927, g: 0.18692113, b: 0.17507207, a: 1}
+  m_IndirectSpecularColor: {r: 0.2226738, g: 0.18432577, b: 0.16180265, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -280,7 +280,7 @@ MonoBehaviour:
   surfaceLevel: 0
   surfaceScale: 0.001
   surfaceMagnitude: 50
-  caveScale: 0.015
+  caveScale: 0.125
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
   derivativeStep: 0.0001

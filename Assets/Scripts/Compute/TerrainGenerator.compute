@@ -113,11 +113,15 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 	// Polygonized chunks are smaller than volume field
 	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
 
+	float halfRes = lodRes / 2;
+
 	// Offset heightmap by half its resolution (because player is in center)
-	float3 lodOffset = float3(lodRes / 2, 0, lodRes / 2); 
+	float3 lodOffset = float3(halfRes, 0, halfRes); 
+
+	float chunkRatio = float(lodChunksPerAxis) / float(isoSize);
 
 	// Create a chunk offset position from thread ID
-	float3 pos = float3(id.x, 0, id.y) + float3(isoAdjustedSize) * chunkOffset;
+	float3 pos = float3(id.x, 0, id.y) + float3(isoAdjustedSize) * chunkOffset * chunkRatio;
 
 	// Put all offsets together
 	float3 offsetPos = (pos + noiseOffset - lodOffset);
