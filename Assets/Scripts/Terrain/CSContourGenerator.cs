@@ -96,7 +96,7 @@ public class CSContourGenerator : MonoBehaviour
 
 		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, Vector3Int.RoundToInt(data.size), res, lodChunks);
 
-		Debug.Log($"Map size: {res}x{res} ({sqrRes}), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size.x}");
+		Debug.Log($"LOD: Res = {res}x{res} ({sqrRes}), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size.x}");
 
 		float[,] surface = new float[res, res];
 		isoDistBuffer.GetData(surface, 0, 0, sqrRes);

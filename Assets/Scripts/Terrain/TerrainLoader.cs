@@ -7,15 +7,22 @@ public class TerrainLoader : MonoBehaviour
 {
 
 	public Transform viewer;
+	public int updateFrequency = 16;
 
+	[Header("Draw Distance Settings")]
 	public int viewDistance = 3;
 	public int viewDepth = 1;
 	public int lodChunks = 32;
+	public int lodRedrawDistance = 4;
+
+	[Header("World Settings")]
 	public Vector3 worldScale = Vector3.one;
 	public Vector3Int volumeSize = new Vector3Int(16, 16, 16);
 
 	public Material defaultMaterial;
 	public Terrain distantTerrain;
+
+	Vector2Int prevLod = new Vector2Int(-999, -999);
 
 	CSGenerator terrainGenerator;
 	CSContourGenerator contourGenerator;
@@ -23,6 +30,8 @@ public class TerrainLoader : MonoBehaviour
 	List<Chunk> chunks;
 	Queue<Chunk> unloadedChunks;
 	Dictionary<Vector3Int, Chunk> loadedChunks;
+
+	int updateCounter = 0;
 
     void Start()
     {
@@ -32,7 +41,12 @@ public class TerrainLoader : MonoBehaviour
 
 	void Update()
 	{
-		UpdateChunks();	
+		if (updateCounter++ % updateFrequency == 0)
+        {
+			UpdateChunks();
+			UpdateDistantTerrain();
+			updateCounter = 0;
+        }
 	}
 
 	void Setup()
@@ -125,9 +139,31 @@ public class TerrainLoader : MonoBehaviour
 					loadedChunks.Add(offsetPos, newChunk);
 					chunks.Add(newChunk);
 					contourGenerator.RequestRemesh(newChunk, posSqrDist);
-
 				}
 			}
+		}
+	}
+
+	public void UpdateDistantTerrain(bool force = false)
+	{
+		Vector3 viewPos = viewer.position;
+		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
+		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
+
+		Vector2Int viewChunk = new Vector2Int(
+				Mathf.RoundToInt(viewPos.x / scaleSize.x),
+				Mathf.RoundToInt(viewPos.z / scaleSize.z));
+
+		int lodRedrawSqr = lodRedrawDistance * lodRedrawDistance;
+
+		if ((viewChunk - prevLod).sqrMagnitude >= lodRedrawSqr || force)
+        {
+			prevLod = viewChunk;
+
+			float w = lodChunks * volumeSize.x;
+
+			contourGenerator.SurfaceRemesh(distantTerrain.terrainData, viewChunk);
+			distantTerrain.transform.SetPositionAndRotation(new Vector3(viewChunk.x * scaleSize.x - w / 2, 0, viewChunk.y * scaleSize.z - w / 2), Quaternion.identity);
 		}
 	}
 
@@ -150,17 +186,5 @@ public class TerrainLoader : MonoBehaviour
 		{
 			contourGenerator.RequestRemesh(chunk, (chunk.position - viewChunk).sqrMagnitude);
 		}
-	}
-
-	public void UpdateDistantTerrain()
-    {
-		Vector3 viewPos = viewer.position;
-		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
-		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
-		Vector2Int viewChunk = new Vector2Int(
-				Mathf.RoundToInt(viewPos.x / scaleSize.x),
-				Mathf.RoundToInt(viewPos.z / scaleSize.z));
-		
-		contourGenerator.SurfaceRemesh(distantTerrain.terrainData, viewChunk);
 	}
 }

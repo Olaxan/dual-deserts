@@ -92,8 +92,7 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 {
 	int index = getVolumeIndex(id);
 	int3 pos = int3(id) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
-	//float3 noisePos = (float3(pos) + noiseOffset) * noiseScale;
-	float3 noisePos = (float3(pos)) * noiseScale;
+	float3 noisePos = (float3(pos) + noiseOffset) * noiseScale;
 
 	float d = density(noisePos);
 	float3 n = calcNormal(noisePos);
@@ -143,7 +142,7 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 {
 
 	uint d = lodChunks / 4;
-	float3 pos = float3(id.x, 0, id.y) + chunkOffset * (int3(isoSize) - int3(2, 2, 2));
+	float3 pos = float3(id.x, 0, id.y) + (chunkOffset * (int3(isoSize) - int3(2, 2, 2))) * caveScale;
 	float3 lodOffset = float3(lodSize.x, 0, lodSize.z) / d;
 	float3 noisePos = (pos + noiseOffset - lodOffset) * noiseScale;
 

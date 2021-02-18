@@ -14,7 +14,7 @@ public class TerrainLoaderInspector : Editor
 			loader.UpdateAll();
 
 		if (GUILayout.Button("Update Distant"))
-			loader.UpdateDistantTerrain();
+			loader.UpdateDistantTerrain(true);
 		
 	}
 }
