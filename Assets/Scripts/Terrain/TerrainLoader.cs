@@ -16,8 +16,8 @@ public class TerrainLoader : MonoBehaviour
 	public int lodRedrawDistance = 4;
 
 	[Header("World Settings")]
-	public Vector3 worldScale = Vector3.one;
-	public Vector3Int volumeSize = new Vector3Int(16, 16, 16);
+	public float volumeScale = 1.0f;
+	public int volumeSize = 64;
 
 	public Material defaultMaterial;
 	public Terrain distantTerrain;
@@ -58,9 +58,9 @@ public class TerrainLoader : MonoBehaviour
 		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
 		terrainGenerator = gameObject.GetComponent<CSGenerator>();
 
-		contourGenerator.Setup(volumeSize, worldScale);
+		contourGenerator.Setup(volumeSize, volumeScale);
 
-		float w = lodChunks * volumeSize.x;
+		float w = lodChunks * volumeSize;
 		distantTerrain.terrainData.size = new Vector3(w, terrainGenerator.surfaceMagnitude, w);
 		distantTerrain.transform.Translate(new Vector3(-w / 2, 0, -w / 2));
 	}
@@ -80,16 +80,16 @@ public class TerrainLoader : MonoBehaviour
 	{
 		
 		Vector3 viewPos = viewer.position;
-		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
-		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
+		int adjustedVolumeSize = volumeSize - 2;
+		float scaledVolumeSize = adjustedVolumeSize * volumeScale;
 
-		Bounds volumeBounds = new Bounds(Vector3.zero, scaleSize);
+		Bounds volumeBounds = new Bounds(Vector3.zero, Vector3.one * scaledVolumeSize);
 		Plane[] camPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
 		Vector3Int viewChunk = new Vector3Int(
-				Mathf.RoundToInt(viewPos.x / scaleSize.x),
-				Mathf.RoundToInt(viewPos.y / scaleSize.y),
-				Mathf.RoundToInt(viewPos.z / scaleSize.z));
+				Mathf.RoundToInt(viewPos.x / scaledVolumeSize),
+				Mathf.RoundToInt(viewPos.y / scaledVolumeSize),
+				Mathf.RoundToInt(viewPos.z / scaledVolumeSize));
 
 		int sqrDist = viewDistance * viewDistance;
 
@@ -122,13 +122,14 @@ public class TerrainLoader : MonoBehaviour
 					if (posSqrDist > sqrDist)
 						continue;
 
-					Vector3 chunkOffset = Vector3.Scale(offsetPos, scaleSize);
+					Vector3 chunkOffset =  (Vector3)offsetPos * scaledVolumeSize;
 					volumeBounds.center = chunkOffset;
 
 					if (!CheckVisible(camPlanes, volumeBounds) && posSqrDist > 1)
 						continue;
 
 					Chunk newChunk;
+
 					if (unloadedChunks.Count > 0)
 						newChunk = unloadedChunks.Dequeue();
 					else
@@ -147,12 +148,12 @@ public class TerrainLoader : MonoBehaviour
 	public void UpdateDistantTerrain(bool force = false)
 	{
 		Vector3 viewPos = viewer.position;
-		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
-		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
+		int adjustedVolumeSize = volumeSize - 2;
+		float scaledVolumeSize = adjustedVolumeSize * volumeScale;
 
 		Vector2Int viewChunk = new Vector2Int(
-				Mathf.RoundToInt(viewPos.x / scaleSize.x),
-				Mathf.RoundToInt(viewPos.z / scaleSize.z));
+				Mathf.RoundToInt(viewPos.x / scaledVolumeSize),
+				Mathf.RoundToInt(viewPos.z / scaledVolumeSize));
 
 		int lodRedrawSqr = lodRedrawDistance * lodRedrawDistance;
 
@@ -160,12 +161,16 @@ public class TerrainLoader : MonoBehaviour
         {
 			prevLod = viewChunk;
 
-			float w = lodChunks * volumeSize.x;
+			float w = lodChunks * volumeSize;
 
 			contourGenerator.SurfaceRemesh(distantTerrain.terrainData, viewChunk);
-			distantTerrain.transform.SetPositionAndRotation(
-					new Vector3(viewChunk.x * scaleSize.x - w / 2, 0, viewChunk.y * scaleSize.z - w / 2), 
-					Quaternion.identity);
+
+			Vector3 terrainOffset = new Vector3(
+					viewChunk.x * scaledVolumeSize - w / 2, 
+					0, 
+					viewChunk.y * scaledVolumeSize - w / 2);
+
+			distantTerrain.transform.SetPositionAndRotation(terrainOffset, Quaternion.identity);
 		}
 	}
 
@@ -177,12 +182,13 @@ public class TerrainLoader : MonoBehaviour
 	public void UpdateAll()
 	{
 		Vector3 viewPos = viewer.position;
-		Vector3Int adjustedVolumeSize = (volumeSize - Vector3Int.one * 2);
-		Vector3 scaleSize = Vector3.Scale(adjustedVolumeSize, worldScale);
+		int adjustedVolumeSize = volumeSize - 2;
+		float scaledVolumeSize = adjustedVolumeSize * volumeScale;
+
 		Vector3Int viewChunk = new Vector3Int(
-				Mathf.RoundToInt(viewPos.x / scaleSize.x),
-				Mathf.RoundToInt(viewPos.y / scaleSize.y),
-				Mathf.RoundToInt(viewPos.z / scaleSize.z));
+				Mathf.RoundToInt(viewPos.x / scaledVolumeSize),
+				Mathf.RoundToInt(viewPos.y / scaledVolumeSize),
+				Mathf.RoundToInt(viewPos.z / scaledVolumeSize));
 
 		foreach (Chunk chunk in chunks)
 		{

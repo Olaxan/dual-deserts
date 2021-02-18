@@ -47,17 +47,17 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
 	}
 
-	public void Generate(ComputeBuffer isoDists, ComputeBuffer isoNormals, Vector3Int chunk, Vector3Int size)
+	public void Generate(ComputeBuffer isoDists, ComputeBuffer isoNormals, Vector3Int chunk, int isoSize)
 	{
 		SetUniforms();
 
 		Vector3Int ts = new Vector3Int(
-				Mathf.CeilToInt(size.x / _threadSizeX), 
-				Mathf.CeilToInt(size.y / _threadSizeY), 
-				Mathf.CeilToInt(size.z / _threadSizeZ));
+				Mathf.CeilToInt(isoSize / _threadSizeX), 
+				Mathf.CeilToInt(isoSize / _threadSizeY), 
+				Mathf.CeilToInt(isoSize / _threadSizeZ));
 
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
-		terrainShader.SetInts("isoSize", new int[] { size.x, size.y, size.z });
+		terrainShader.SetInt("isoSize", isoSize);
 
 		terrainShader.SetBuffer(_generatorKernel, "isoDists", isoDists);
 		terrainShader.SetBuffer(_generatorKernel, "isoNormals", isoNormals);
@@ -65,17 +65,17 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
 	}
 
-	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, Vector3Int size, int res, int lodChunksPerAxis)
+	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, int lodSize, int lodRes, int isoSize)
 	{
 		SetUniforms();
 
-		int ts = Mathf.CeilToInt(res / _threadSizeX);
+		int ts = Mathf.CeilToInt(lodRes / _threadSizeX);
 
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, 0, chunk.y });
-		terrainShader.SetInts("isoSize", new int[] { res, 1, res });
-		terrainShader.SetInts("lodSize", new int[] { size.x, size.y, size.z });
-		terrainShader.SetInt("lodRes", res);
-		terrainShader.SetInt("lodChunksPerAxis", lodChunksPerAxis);
+		terrainShader.SetInt("isoSize", isoSize);
+		terrainShader.SetInt("lodSize", lodSize);
+		terrainShader.SetInt("lodRes", lodRes);
+		terrainShader.SetInt("lodChunksPerAxis", lodRes / isoSize);
 
 		terrainShader.SetBuffer(_surfaceGeneratorKernel, "isoDists", isoDists);
 

@@ -302,8 +302,8 @@ MonoBehaviour:
   viewDepth: 2
   lodChunks: 32
   lodRedrawDistance: 1
-  worldScale: {x: 0.5, y: 0.5, z: 0.5}
-  volumeSize: {x: 64, y: 64, z: 64}
+  volumeScale: 0.5
+  volumeSize: 64
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
   distantTerrain: {fileID: 807154204}
 --- !u!1 &807154202

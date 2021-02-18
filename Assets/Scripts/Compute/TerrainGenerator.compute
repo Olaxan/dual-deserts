@@ -22,7 +22,7 @@ float surfaceMagnitude;
 
 float caveScale;
 
-uint3 lodSize;
+uint lodSize;
 uint lodChunksPerAxis;
 uint lodRes;
 
@@ -91,52 +91,16 @@ float3 calcNormal2(float3 p) {
 [numthreads(8,8,1)]
 void CSGenerator(uint3 id : SV_DispatchThreadID)
 {
-	int index = getVolumeIndex(id);
+	uint index = getVolumeIndex(id);
 
 	// Polygonized chunks are smaller than volume field
-	int3 isoAdjustedSize = int3(isoSize) - int3(2, 2, 2);
+	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
 
-	float3 pos = float3(id) + chunkOffset * isoAdjustedSize;
+	float3 pos = float3(id) + float3(isoAdjustedSize) * chunkOffset;
 	float3 noisePos = (pos + noiseOffset) * noiseScale;
 
 	float d = density(noisePos);
 	float3 n = calcNormal(noisePos);
-
-	#ifdef CLOSE_FIELD
-	if (d <= 0)
-	{
-		if (id.x == 0)
-		{
-			d = 0.5;
-			n = -axes[0];
-		}
-		else if (id.y == 0)
-		{
-			d = 0.5;
-			n = -axes[1];
-		}
-		else if (id.z == 0)
-		{
-			d = 0.5;
-			n = -axes[2];
-		}
-		else if (id.x == isoSize.x - 2)
-		{
-			d = 0.5;
-			n = axes[0];
-		}
-		else if (id.y == isoSize.y - 2)
-		{
-			d = 0.5;
-			n = axes[1];
-		}
-		else if (id.z == isoSize.z - 2)
-		{
-			d = 0.5;
-			n = axes[2];
-		}
-	}
-	#endif
 
 	isoDists[index] = d;
 	isoNormals[index] = n;
@@ -147,13 +111,13 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 {
 
 	// Polygonized chunks are smaller than volume field
-	int3 isoAdjustedSize = int3(isoSize) - int3(2, 2, 2);
+	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
 
 	// Offset heightmap by half its resolution (because player is in center)
 	float3 lodOffset = float3(lodRes / 2, 0, lodRes / 2); 
 
 	// Create a chunk offset position from thread ID
-	float3 pos = float3(id.x, 0, id.y) + (chunkOffset * isoAdjustedSize * caveScale);
+	float3 pos = float3(id.x, 0, id.y) + float3(isoAdjustedSize) * chunkOffset;
 
 	// Put all offsets together
 	float3 offsetPos = (pos + noiseOffset - lodOffset);
@@ -162,7 +126,7 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 	offsetPos *= lodChunksPerAxis;
 	offsetPos *= noiseScale;
 
-	int idx = id.x + isoSize.x * id.y;
+	int idx = id.x + lodRes * id.y;
 
 	isoDists[idx] = abs(surface(offsetPos)) / (surfaceMagnitude * 2);
 }

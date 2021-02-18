@@ -16,8 +16,8 @@ public class CSContourGenerator : MonoBehaviour
 
 	CSGenerator terrainGenerator;
 
-	Vector3Int size;
-	Vector3 scale;
+	int size;
+	float scale;
 
 	ComputeBuffer isoDistBuffer;
 	ComputeBuffer isoNormalBuffer;
@@ -37,9 +37,9 @@ public class CSContourGenerator : MonoBehaviour
 	uint _threadSizeX;
 	uint _threadSizeY;
 	uint _threadSizeZ;
-	Vector3Int bufferSize;
+	int bufferSize;
 
-	Vector3Int VoxelSize { get => size - Vector3Int.one; }
+	int VoxelSize { get => size - 1; }
 
 	void Update()
 	{
@@ -61,7 +61,7 @@ public class CSContourGenerator : MonoBehaviour
 		ReleaseBuffers();
 	}
 
-	public void Setup(Vector3Int isoSize, Vector3 isoScale)
+	public void Setup(int isoSize, float isoScale)
 	{
 		terrainGenerator = gameObject.GetComponent<CSGenerator>();
 		if (terrainGenerator == null)
@@ -92,11 +92,10 @@ public class CSContourGenerator : MonoBehaviour
     {
 		int res = data.heightmapResolution - 1;
 		int sqrRes = res * res;
-		int lodChunks = Mathf.RoundToInt(res / size.x);
 
-		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, Vector3Int.RoundToInt(data.size), res, lodChunks);
+		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, Mathf.RoundToInt(data.size.x), res, size);
 
-		Debug.Log($"LOD {chunk}: Res = {res}x{res} ({sqrRes}), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size.x}");
+		Debug.Log($"LOD {chunk}: Res = {res}x{res} ({sqrRes}), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size}");
 
 		float[,] surface = new float[res, res];
 		isoDistBuffer.GetData(surface, 0, 0, sqrRes);
@@ -110,18 +109,18 @@ public class CSContourGenerator : MonoBehaviour
 		if (bufferSize != size)
 			SetupBuffers();
 
-		int pointCount = size.x * size.y * size.z;
-		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
+		int pointCount = size * size * size;
+		int indexCount = VoxelSize * VoxelSize * VoxelSize;
 
 		Vector3Int ts = new Vector3Int(
-				Mathf.CeilToInt(size.x / _threadSizeX), 
-				Mathf.CeilToInt(size.y / _threadSizeY), 
-				Mathf.CeilToInt(size.z / _threadSizeZ));
+				Mathf.CeilToInt(size / _threadSizeX), 
+				Mathf.CeilToInt(size / _threadSizeY), 
+				Mathf.CeilToInt(size / _threadSizeZ));
 
 		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.position, size);
 
-		contourGenerator.SetInts("isoSize", new int[] { size.x, size.y, size.z });
-		contourGenerator.SetFloats("scale", new float[] { scale.x, scale.y, scale.z });
+		contourGenerator.SetInt("isoSize", size); 
+		contourGenerator.SetFloat("isoScale", scale);
 		contourGenerator.SetFloat("maxCornerDistance", maxCornerDistance);
 		contourGenerator.SetFloat("centerBias", centerBias);
 		contourGenerator.SetFloat("clampRange", clampRange);
@@ -166,8 +165,8 @@ public class CSContourGenerator : MonoBehaviour
 
 	void SetupBuffers()
 	{
-		int pointCount = size.x * size.y * size.z;
-		int indexCount = VoxelSize.x * VoxelSize.y * VoxelSize.z;
+		int pointCount = size * size * size;
+		int indexCount = VoxelSize * VoxelSize * VoxelSize;
 		int quadCount = indexCount * 3 * 2;
 
 		bufferSize = size;

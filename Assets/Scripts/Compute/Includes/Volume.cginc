@@ -5,21 +5,21 @@
 RWStructuredBuffer<float> isoDists;
 RWStructuredBuffer<float3> isoNormals;
 
-int3 isoSize;
+uint isoSize;
 
-int getVolumeIndex(int3 id)
+uint getVolumeIndex(uint3 id)
 {
-	return ((id.z * isoSize.y) + id.y) * isoSize.x + id.x;
+	return ((id.z * isoSize) + id.y) * isoSize + id.x;
 }
 
-bool checkEdge(int3 id, int range)
+bool checkEdge(uint3 id, uint range)
 {
-	return (id.x >= isoSize.x - range 
-		|| id.y >= isoSize.y - range 
-		|| id.z >= isoSize.z - range);
+	return (id.x >= isoSize - range 
+		|| id.y >= isoSize - range 
+		|| id.z >= isoSize - range);
 }
 
-bool isBorder(int3 id)
+bool isBorder(uint3 id)
 {
 	return (id.x * id.y * id.z == 0) || checkEdge(id, 1);
 }

@@ -19,15 +19,14 @@ RWStructuredBuffer<float3> vertices;
 RWStructuredBuffer<float3> normals;
 AppendStructuredBuffer<Quad> quads;
 
-int LOD;
-float3 scale;
+float isoScale;
 float maxCornerDistance;
 float centerBias;
 float clampRange;
 
-int getVoxelIndex(int3 id)
+uint getVoxelIndex(uint3 id)
 {
-	return ((id.z * (isoSize.y - 1)) + id.y) * (isoSize.x - 1) + id.x;
+	return ((id.z * (isoSize - 1)) + id.y) * (isoSize - 1) + id.x;
 }
 
 bool SolveMatrix(in float3x3 A, in float3 b, out float3 vertex)
@@ -98,7 +97,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	if (checkEdge(id, 1))
 		return;
 
-	int index = getVoxelIndex(id);
+	uint index = getVoxelIndex(id);
 	indices[index] = -1;
 
 	bool inside[numCorners];
@@ -184,7 +183,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	else 
 		vertex = voxelCenter;
 
-	vertex *= scale;
+	vertex *= isoScale;
 
 	int idx = vertices.IncrementCounter();
 	vertices[idx] = vertex;
