@@ -36,7 +36,25 @@ public class TerrainLoader : MonoBehaviour
 
 	int updateCounter = 0;
 
-    void Start()
+	public static int CeilPower2(int x)
+	{
+		if (x < 2)
+		{
+			return 1;
+		}
+		return (int)Mathf.Pow(2, (int)Mathf.Log(x - 1, 2) + 1);
+	}
+
+	public static int FloorPower2(int x)
+	{
+		if (x < 1)
+		{
+			return 1;
+		}
+		return (int)Mathf.Pow(2, (int)Mathf.Log(x, 2));
+	}
+
+	void Start()
     {
        Setup(); 
 	   UpdateChunks();
@@ -65,6 +83,9 @@ public class TerrainLoader : MonoBehaviour
 
 		float w = LodWidth;
 		float h = LodHeight;
+		int r = FloorPower2(Mathf.RoundToInt(Mathf.Sqrt(Mathf.Pow(volumeSize, 3))));
+
+		Debug.Log(r);
 
 		distantTerrain.terrainData.size = new Vector3(w, h, w);
 		distantTerrain.transform.Translate(new Vector3(-w / 2, 0, -w / 2));
