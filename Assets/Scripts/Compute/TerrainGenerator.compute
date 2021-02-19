@@ -41,12 +41,16 @@ float uSNoise(in float2 p)
 
 float surface(in float3 p)
 {
-	float surf = p.y - surfaceLevel;
-	surf -= uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
-	surf -= uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
-	surf -= uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
-	surf -= uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
-	surf -= uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+	float surf = surfaceLevel - p.y;
+	
+	//surf += (1 + sin(p.x * surfaceScale)) / 2 * surfaceMagnitude;
+	surf += uSNoise(p.xz * surfaceScale) * surfaceMagnitude;
+
+	//surf += uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
+	//surf += uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
+	//surf += uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
+	//surf += uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
+	//surf += uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
 
 	return surf;
 }
@@ -54,7 +58,7 @@ float surface(in float3 p)
 float density(in float3 p)
 {
 
-	float d = surface(p);
+	float d = -surface(p);
 
 	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
 	float torus = sdTorus(p, float2(50, 5));
@@ -111,9 +115,9 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 {
 
 	// Polygonized chunks are smaller than volume field
-	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
+	uint3 isoAdjustedSize = (isoSize - uint3(2, 2, 2)) * isoScale;
 
-	uint step = lodSize / lodRes; // = 8
+	uint step = lodSize / lodRes;
 
 	// Offset heightmap by half its width (because player is in center)
 	float halfSize = lodSize / 2;
@@ -124,11 +128,7 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 	float3 noisePos = (pos + noiseOffset) * noiseScale;
 	float3 offsetPos = (noisePos - lodCenterOffset);
 
-	//float3 pos = float3(id.x, 0, id.y) + (float3(isoAdjustedSize)*chunkOffset) / float(step);
-	//float3 noisePos = (pos + noiseOffset) * noiseScale;
-	//float3 offsetPos = (noisePos - lodCenterOffset) * step;
-
 	int idx = id.x + lodRes * id.y;
 
-	isoDists[idx] = abs(surface(offsetPos)) / (surfaceMagnitude * 2);
+	isoDists[idx] = surface(offsetPos / isoScale) / (surfaceMagnitude / isoScale);
 }

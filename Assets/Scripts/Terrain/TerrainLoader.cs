@@ -12,7 +12,7 @@ public class TerrainLoader : MonoBehaviour
 	[Header("Draw Distance Settings")]
 	public int viewDistance = 3;
 	public int viewDepth = 1;
-	public int lodChunks = 32;
+	public int lodSize = 2048;
 	public int lodRedrawDistance = 4;
 
 	[Header("World Settings")]
@@ -24,8 +24,8 @@ public class TerrainLoader : MonoBehaviour
 
 	Vector2Int prevLod = new Vector2Int(-999, -999);
 
-	float LodWidth { get => lodChunks * volumeSize * volumeScale * 2; }
-	float LodHeight { get => terrainGenerator.surfaceMagnitude * volumeScale * 2; }
+	float LodWidth { get => lodSize; }
+	float LodHeight { get => terrainGenerator.surfaceMagnitude; }
 
 	CSGenerator terrainGenerator;
 	CSContourGenerator contourGenerator;
@@ -83,9 +83,9 @@ public class TerrainLoader : MonoBehaviour
 
 		float w = LodWidth;
 		float h = LodHeight;
-		int r = FloorPower2(Mathf.RoundToInt(Mathf.Sqrt(Mathf.Pow(volumeSize, 3))));
 
-		Debug.Log(r);
+		// Ensure LOD fits into compute buffer
+		int r = FloorPower2(Mathf.RoundToInt(Mathf.Sqrt(Mathf.Pow(volumeSize, 3))));
 
 		distantTerrain.terrainData.size = new Vector3(w, h, w);
 		distantTerrain.terrainData.heightmapResolution = r;

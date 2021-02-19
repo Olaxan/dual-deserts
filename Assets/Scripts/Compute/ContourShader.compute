@@ -19,7 +19,6 @@ RWStructuredBuffer<float3> vertices;
 RWStructuredBuffer<float3> normals;
 AppendStructuredBuffer<Quad> quads;
 
-float isoScale;
 float maxCornerDistance;
 float centerBias;
 float clampRange;

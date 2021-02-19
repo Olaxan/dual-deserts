@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.22313891, g: 0.18692149, b: 0.17507207, a: 1}
+  m_IndirectSpecularColor: {r: 0.22332661, g: 0.1869786, b: 0.17493093, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -278,8 +278,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
-  surfaceScale: 0.001
-  surfaceMagnitude: 50
+  surfaceScale: 0.005
+  surfaceMagnitude: 25
   caveScale: 0.125
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
@@ -300,10 +300,10 @@ MonoBehaviour:
   updateFrequency: 16
   viewDistance: 2
   viewDepth: 2
-  lodChunks: 32
+  lodSize: 1024
   lodRedrawDistance: 1
   volumeScale: 1
-  volumeSize: 32
+  volumeSize: 64
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
   distantTerrain: {fileID: 807154204}
 --- !u!1 &807154202
@@ -721,7 +721,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 58.6
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalPosition.z
@@ -759,6 +759,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_HDR
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 20724644957976244, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+        type: 3}
+      propertyPath: far clip plane
+      value: 2048
       objectReference: {fileID: 0}
     - target: {fileID: 20724644957976244, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
         type: 3}

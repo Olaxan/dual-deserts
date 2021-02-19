@@ -36,8 +36,11 @@ public class CSGenerator : MonoBehaviour
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 	}
 
-	void SetUniforms()
+	void SetUniforms(int size, float scale)
     {
+		terrainShader.SetInt("isoSize", size);
+		terrainShader.SetFloat("isoScale", scale);
+
 		terrainShader.SetFloat("surfaceLevel", surfaceLevel);
 		terrainShader.SetFloat("surfaceScale", surfaceScale);
 		terrainShader.SetFloat("surfaceMagnitude", surfaceMagnitude);
@@ -47,9 +50,9 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
 	}
 
-	public void Generate(ComputeBuffer isoDists, ComputeBuffer isoNormals, Vector3Int chunk, int isoSize)
+	public void Generate(ComputeBuffer isoDists, ComputeBuffer isoNormals, Vector3Int chunk, int isoSize, float isoScale)
 	{
-		SetUniforms();
+		SetUniforms(isoSize, isoScale);
 
 		Vector3Int ts = new Vector3Int(
 				Mathf.CeilToInt(isoSize / _threadSizeX), 
@@ -57,7 +60,6 @@ public class CSGenerator : MonoBehaviour
 				Mathf.CeilToInt(isoSize / _threadSizeZ));
 
 		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, chunk.y, chunk.z });
-		terrainShader.SetInt("isoSize", isoSize);
 
 		terrainShader.SetBuffer(_generatorKernel, "isoDists", isoDists);
 		terrainShader.SetBuffer(_generatorKernel, "isoNormals", isoNormals);
@@ -65,9 +67,9 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
 	}
 
-	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, int lodSize, int lodRes, int isoSize)
+	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, int lodSize, int lodRes, int isoSize, float isoScale)
 	{
-		SetUniforms();
+		SetUniforms(isoSize, isoScale);
 
 		int ts = Mathf.CeilToInt(lodRes / _threadSizeX);
 

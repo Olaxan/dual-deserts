@@ -6,6 +6,7 @@ RWStructuredBuffer<float> isoDists;
 RWStructuredBuffer<float3> isoNormals;
 
 uint isoSize;
+float isoScale;
 
 uint getVolumeIndex(uint3 id)
 {
