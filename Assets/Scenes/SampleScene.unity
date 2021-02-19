@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.2226738, g: 0.18432577, b: 0.16180265, a: 1}
+  m_IndirectSpecularColor: {r: 0.22313891, g: 0.18692149, b: 0.17507207, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -302,8 +302,8 @@ MonoBehaviour:
   viewDepth: 2
   lodChunks: 32
   lodRedrawDistance: 1
-  volumeScale: 0.5
-  volumeSize: 64
+  volumeScale: 1
+  volumeSize: 32
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
   distantTerrain: {fileID: 807154204}
 --- !u!1 &807154202

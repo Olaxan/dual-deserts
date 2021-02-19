@@ -88,6 +88,7 @@ public class TerrainLoader : MonoBehaviour
 		Debug.Log(r);
 
 		distantTerrain.terrainData.size = new Vector3(w, h, w);
+		distantTerrain.terrainData.heightmapResolution = r;
 		distantTerrain.transform.Translate(new Vector3(-w / 2, 0, -w / 2));
 	}
 

@@ -113,22 +113,20 @@ void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
 	// Polygonized chunks are smaller than volume field
 	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
 
-	float halfRes = lodRes / 2;
+	uint step = lodSize / lodRes; // = 8
 
-	// Offset heightmap by half its resolution (because player is in center)
-	float3 lodOffset = float3(halfRes, 0, halfRes); 
+	// Offset heightmap by half its width (because player is in center)
+	float halfSize = lodSize / 2;
+	float3 lodCenterOffset = float3(halfSize, 0, halfSize);
 
-	float chunkRatio = float(lodChunksPerAxis) / float(isoSize);
+	// Every id should be STEP units apart (the resolution of the heightmap)
+	float3 pos = float3(id.x, 0, id.y) * step + float3(isoAdjustedSize) * chunkOffset;
+	float3 noisePos = (pos + noiseOffset) * noiseScale;
+	float3 offsetPos = (noisePos - lodCenterOffset);
 
-	// Create a chunk offset position from thread ID
-	float3 pos = float3(id.x, 0, id.y) + float3(isoAdjustedSize) * chunkOffset * chunkRatio;
-
-	// Put all offsets together
-	float3 offsetPos = (pos + noiseOffset - lodOffset);
-
-	// Step with larger noise values because lod terrain is bigger than a single chunk
-	offsetPos *= lodChunksPerAxis;
-	offsetPos *= noiseScale;
+	//float3 pos = float3(id.x, 0, id.y) + (float3(isoAdjustedSize)*chunkOffset) / float(step);
+	//float3 noisePos = (pos + noiseOffset) * noiseScale;
+	//float3 offsetPos = (noisePos - lodCenterOffset) * step;
 
 	int idx = id.x + lodRes * id.y;
 

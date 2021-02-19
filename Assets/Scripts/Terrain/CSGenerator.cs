@@ -75,7 +75,7 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetInt("isoSize", isoSize);
 		terrainShader.SetInt("lodSize", lodSize);
 		terrainShader.SetInt("lodRes", lodRes);
-		terrainShader.SetInt("lodChunksPerAxis", lodRes / isoSize);
+		terrainShader.SetInt("lodChunksPerAxis", lodSize / isoSize);
 
 		terrainShader.SetBuffer(_surfaceGeneratorKernel, "isoDists", isoDists);
 
