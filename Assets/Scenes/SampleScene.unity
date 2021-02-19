@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.20237058, g: 0.15749425, b: 0.12213871, a: 1}
+  m_IndirectSpecularColor: {r: 0.22104071, g: 0.18552972, b: 0.17565882, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -298,11 +298,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewer: {fileID: 1262800637}
   updateFrequency: 16
-  viewDistance: 2
+  viewDistance: 8
   viewDepth: 2
   lodSize: 2048
   lodRedrawDistance: 4
-  lodHoleSize: 8
+  lodHoleSize: 128
   volumeScale: 0.5
   volumeSize: 64
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
