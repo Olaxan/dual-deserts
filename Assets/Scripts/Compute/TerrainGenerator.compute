@@ -26,6 +26,11 @@ uint lodSize;
 uint lodChunksPerAxis;
 uint lodRes;
 
+float4x4 octaveMat0;
+float4x4 octaveMat1;
+float4x4 octaveMat2;
+float4x4 octaveMat3;
+
 
 float3 rot(float3 coord, float4x4 mat)
 {
@@ -43,11 +48,20 @@ float surface(in float3 p)
 {
 	float surf = surfaceLevel - p.y;
 
+	float3 c0 = rot(p, octaveMat0);
+	float3 c1 = rot(p, octaveMat1);
+	float3 c2 = rot(p, octaveMat2);
+	float3 c3 = rot(p, octaveMat3);
+
 	surf += uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
 	surf += uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
 	surf += uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
 	surf += uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
 	surf += uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+	surf += uSNoise(c0.xz * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
+	surf += uSNoise(c1.xz * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
+	surf += uSNoise(c2.xz * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
+	surf += uSNoise(c3.xz * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
 
 	return surf;
 }

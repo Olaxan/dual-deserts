@@ -17,6 +17,11 @@ public class CSGenerator : MonoBehaviour
 
 	public float derivativeStep = 0.0001f;
 
+	Matrix4x4 rot1;
+	Matrix4x4 rot2;
+	Matrix4x4 rot3;
+	Matrix4x4 rot4;
+
 	int _generatorKernel, _surfaceGeneratorKernel;
 	uint _threadSizeX;
 	uint _threadSizeY;
@@ -34,12 +39,22 @@ public class CSGenerator : MonoBehaviour
 
 		terrainShader.GetKernelThreadGroupSizes(_generatorKernel,
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
+
+		rot1 = Matrix4x4.Rotate(Random.rotation);
+		rot2 = Matrix4x4.Rotate(Random.rotation);
+		rot3 = Matrix4x4.Rotate(Random.rotation);
+		rot4 = Matrix4x4.Rotate(Random.rotation);
 	}
 
 	void SetUniforms(int size, float scale)
     {
 		terrainShader.SetInt("isoSize", size);
 		terrainShader.SetFloat("isoScale", scale);
+
+		terrainShader.SetMatrix("octaveMat0", rot1);
+		terrainShader.SetMatrix("octaveMat1", rot2);
+		terrainShader.SetMatrix("octaveMat2", rot3);
+		terrainShader.SetMatrix("octaveMat3", rot4);
 
 		terrainShader.SetFloat("surfaceLevel", surfaceLevel);
 		terrainShader.SetFloat("surfaceScale", surfaceScale);

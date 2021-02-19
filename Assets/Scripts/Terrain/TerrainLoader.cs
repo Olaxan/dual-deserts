@@ -14,6 +14,7 @@ public class TerrainLoader : MonoBehaviour
 	public int viewDepth = 1;
 	public int lodSize = 2048;
 	public int lodRedrawDistance = 4;
+	public int lodHoleSize = 4;
 
 	[Header("World Settings")]
 	public float volumeScale = 1.0f;
@@ -33,6 +34,11 @@ public class TerrainLoader : MonoBehaviour
 	List<Chunk> chunks;
 	Queue<Chunk> unloadedChunks;
 	Dictionary<Vector3Int, Chunk> loadedChunks;
+
+	bool[,] makeHoleStencil;
+	bool[,] closeHoleStencil;
+
+	Vector2Int lastStencil;
 
 	int updateCounter = 0;
 
@@ -90,6 +96,13 @@ public class TerrainLoader : MonoBehaviour
 		distantTerrain.terrainData.size = new Vector3(w, h, w);
 		distantTerrain.terrainData.heightmapResolution = r;
 		distantTerrain.transform.Translate(new Vector3(-w / 2, 0, -w / 2));
+
+		
+
+		lastStencil = new Vector2Int(lodHoleSize, lodHoleSize);
+
+		SetupStencils();
+		ClearHoles();
 	}
 
 	Chunk AddChunk()
@@ -130,6 +143,8 @@ public class TerrainLoader : MonoBehaviour
 				loadedChunks.Remove(chunk.position);
 				unloadedChunks.Enqueue(chunk);
 				chunks.RemoveAt(i);
+
+				//SetHole(chunk.transform.position, false);
 			}
 		}
 
@@ -167,6 +182,8 @@ public class TerrainLoader : MonoBehaviour
 					loadedChunks.Add(offsetPos, newChunk);
 					chunks.Add(newChunk);
 					contourGenerator.RequestRemesh(newChunk, posSqrDist);
+
+					SetHole(chunkOffset + Vector3.one * (scaledVolumeSize / 2), true);
 				}
 			}
 		}
@@ -199,6 +216,49 @@ public class TerrainLoader : MonoBehaviour
 
 			distantTerrain.transform.SetPositionAndRotation(terrainOffset, Quaternion.identity);
 		}
+	}
+
+	void SetupStencils()
+    {
+		closeHoleStencil = new bool[lodHoleSize, lodHoleSize];
+		makeHoleStencil = new bool[lodHoleSize, lodHoleSize];
+
+		for (int i = 0; i < lodHoleSize * lodHoleSize; i++)
+		{
+			int x = i % lodHoleSize;
+			int y = i / lodHoleSize;
+
+			closeHoleStencil[x, y] = true;
+			makeHoleStencil[x, y] = false;
+		}
+	}
+
+	void ClearHoles()
+    {
+		int holes = distantTerrain.terrainData.holesResolution;
+		bool[,] arr = new bool[holes, holes];
+
+		for (int j = 0; j < holes * holes; j++)
+		{
+			int x = j % holes;
+			int y = j / holes;
+			arr[x, y] = true;
+		}
+
+		distantTerrain.terrainData.SetHoles(0, 0, arr);
+	}
+
+	void SetHole(Vector3 pos, bool isHole)
+    {
+		Vector3 lodRelPos = pos - distantTerrain.transform.position;
+
+		int res = distantTerrain.terrainData.holesResolution;
+		int xStencil = Mathf.RoundToInt(lodRelPos.x / lodSize * res) - lodHoleSize / 2;
+		int yStencil = Mathf.RoundToInt(lodRelPos.z / lodSize * res) - lodHoleSize / 2;
+
+		Debug.Log($"Hole at {lodRelPos} / {xStencil}, {yStencil} = {isHole}");
+
+		distantTerrain.terrainData.SetHoles(xStencil, yStencil, isHole ? makeHoleStencil : closeHoleStencil);
 	}
 
 	bool CheckVisible(Plane[] frustum, Bounds bounds)
