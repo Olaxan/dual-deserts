@@ -194,7 +194,7 @@ public class TerrainLoader : MonoBehaviour
 
 			Vector3 terrainOffset = new Vector3(
 					viewChunk.x * scaledVolumeSize - w / 2, 
-					0, 
+					-0.1f, 
 					viewChunk.y * scaledVolumeSize - w / 2);
 
 			distantTerrain.transform.SetPositionAndRotation(terrainOffset, Quaternion.identity);
