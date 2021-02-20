@@ -280,7 +280,8 @@ MonoBehaviour:
   surfaceLevel: 0
   surfaceScale: 0.0005
   surfaceMagnitude: 150
-  caveScale: 0.125
+  warpScale: 0.004
+  warpMagnitude: 8
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
   derivativeStep: 0.0001
@@ -301,8 +302,9 @@ MonoBehaviour:
   viewDistance: 8
   viewDepth: 2
   lodSize: 2048
-  lodRedrawDistance: 4
+  lodRedrawDistance: 1
   lodHoleSize: 128
+  lodVerticalOffset: -1
   volumeScale: 0.5
   volumeSize: 64
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}

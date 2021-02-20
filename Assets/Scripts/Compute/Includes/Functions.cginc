@@ -21,6 +21,51 @@ float2 sminCubic(float a, float b, float k )
     return (a < b) ? float2(a - s, m) : float2(b - s, 1.0 - m);
 }
 
+float opUnion(float d1, float d2) { return min(d1, d2); }
+
+float opSubtraction(float d1, float d2) { return max(-d1, d2); }
+
+float opIntersection(float d1, float d2) { return max(d1, d2); }
+
+float opSmoothUnion(float d1, float d2, float k) {
+	float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+	return lerp(d2, d1, h) - k * h * (1.0 - h);
+}
+
+float opSmoothSubtraction(float d1, float d2, float k) {
+	float h = clamp(0.5 - 0.5 * (d2 + d1) / k, 0.0, 1.0);
+	return lerp(d2, -d1, h) + k * h * (1.0 - h);
+}
+
+float opSmoothIntersection(float d1, float d2, float k) {
+	float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
+	return lerp(d2, d1, h) + k * h * (1.0 - h);
+}
+
+float sdMandelbulb(float3 p, float power)
+{
+	float3 z = p;
+	float dr = 1;
+	float r;
+
+	for (int i = 0; i < 15; i++)
+	{
+		r = length(z);
+		if (r > 2)
+			break;
+
+		float theta = acos(z.z / r) * power;
+		float phi = atan2(z.y, z.x) * power;
+		float zr = pow(r, power);
+		dr = pow(r, power - 1) * power * dr + 1;
+
+		z = zr * float3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
+		z += p;
+	}
+
+	return 0.5 * log(r) * r / dr;
+}
+
 float sdSphere(float3 p, float s )
 {
 	return length(p) - s;

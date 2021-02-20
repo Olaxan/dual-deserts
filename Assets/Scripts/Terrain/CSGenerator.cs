@@ -10,7 +10,8 @@ public class CSGenerator : MonoBehaviour
 	public float surfaceScale;
 	public float surfaceMagnitude;
 
-	public float caveScale;
+	public float warpScale = 0.004f;
+	public float warpMagnitude = 8;
 
 	public Vector3 noiseOffset;
 	public Vector3 noiseScale;
@@ -59,7 +60,8 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloat("surfaceLevel", surfaceLevel);
 		terrainShader.SetFloat("surfaceScale", surfaceScale);
 		terrainShader.SetFloat("surfaceMagnitude", surfaceMagnitude);
-		terrainShader.SetFloat("caveScale", caveScale);
+		terrainShader.SetFloat("warpScale", warpScale);
+		terrainShader.SetFloat("warpMagnitude", warpMagnitude);
 		terrainShader.SetFloat("derivativeStep", derivativeStep);
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });

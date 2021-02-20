@@ -20,7 +20,8 @@ float surfaceLevel;
 float surfaceScale;
 float surfaceMagnitude;
 
-float caveScale;
+float warpScale;
+float warpMagnitude;
 
 uint lodSize;
 uint lodChunksPerAxis;
@@ -44,6 +45,20 @@ float uSNoise(in float2 p)
 	return (1.0 + snoise(p)) / 2.0;
 }
 
+float uSNoise(in float3 p)
+{
+	return (1.0 + snoise(p)) / 2.0;
+}
+
+float3 colorNs(in float3 p)
+{
+	return float3(
+		snoise(p),
+		snoise(p + 17.0),
+		snoise(p - 43.0)
+		);
+}
+
 float surface(in float3 p)
 {
 	float surf = surfaceLevel - p.y;
@@ -53,15 +68,15 @@ float surface(in float3 p)
 	float3 c2 = rot(p, octaveMat2);
 	float3 c3 = rot(p, octaveMat3);
 
-	surf += uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
-	surf += uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
-	surf += uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
-	surf += uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
-	surf += uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
-	surf += uSNoise(c0.xz * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
-	surf += uSNoise(c1.xz * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
-	surf += uSNoise(c2.xz * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
-	surf += uSNoise(c3.xz * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
+	surf += uSNoise(p * surfaceScale * 1.000) * surfaceMagnitude;
+	surf += uSNoise(p * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
+	surf += uSNoise(p * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
+	surf += uSNoise(p * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
+	surf += uSNoise(p * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+	surf += uSNoise(c0 * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
+	surf += uSNoise(c1 * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
+	surf += uSNoise(c2 * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
+	surf += uSNoise(c3 * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
 
 	return surf;
 }
@@ -69,17 +84,22 @@ float surface(in float3 p)
 float density(in float3 p)
 {
 
-	float d = -surface(p);
+	float3 warp = colorNs(p * warpScale);
+	float3 wp = p + warp * warpMagnitude;
 
-	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
-	float torus = sdTorus(p, float2(50, 5));
-	float cyl = sdCappedCylinder(p, 25, 25);
+	float d = -surface(wp);
+
+	float cube = sdRoundBox(wp, float3(15, 15, 10), 2.0);
+	float torus = sdTorus(wp, float2(50, 5));
+	float cyl = sdCappedCylinder(wp, 25, 25);
 
 	float a = smin(d, cube, 10).x;
 	float b = smin(a, torus, 10).x;
 	float c = smin(b, cyl, 10).x;
 
-	return c;
+	float cut = sdSphere(wp + float3(0, -148, 0), 48);
+
+	return opSubtraction(cut, c);
 
 }
 

@@ -15,6 +15,7 @@ public class TerrainLoader : MonoBehaviour
 	public int lodSize = 2048;
 	public int lodRedrawDistance = 4;
 	public int lodHoleSize = 4;
+	public float lodVerticalOffset = -0.1f;
 
 	[Header("World Settings")]
 	public float volumeScale = 1.0f;
@@ -205,7 +206,7 @@ public class TerrainLoader : MonoBehaviour
 
 			Vector3 terrainOffset = new Vector3(
 					viewChunk.x * scaledVolumeSize - w / 2, 
-					-0.1f, 
+					lodVerticalOffset, 
 					viewChunk.y * scaledVolumeSize - w / 2);
 
 			distantTerrain.transform.SetPositionAndRotation(terrainOffset, Quaternion.identity);
