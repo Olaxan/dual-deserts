@@ -10,7 +10,8 @@ public class CSGenerator : MonoBehaviour
 	public float surfaceScale;
 	public float surfaceMagnitude;
 
-	public float caveScale;
+	public float warpScale;
+	public float warpMagnitude;
 
 	public Vector3 noiseOffset;
 	public Vector3 noiseScale;
@@ -59,7 +60,8 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloat("surfaceLevel", surfaceLevel);
 		terrainShader.SetFloat("surfaceScale", surfaceScale);
 		terrainShader.SetFloat("surfaceMagnitude", surfaceMagnitude);
-		terrainShader.SetFloat("caveScale", caveScale);
+		terrainShader.SetFloat("warpScale", warpScale);
+		terrainShader.SetFloat("warpMagnitude", warpMagnitude);
 		terrainShader.SetFloat("derivativeStep", derivativeStep);
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
@@ -80,22 +82,5 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetBuffer(_generatorKernel, "isoNormals", isoNormals);
 
 		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
-	}
-
-	public void GenerateSurface(ComputeBuffer isoDists, Vector2Int chunk, int lodSize, int lodRes, int isoSize, float isoScale)
-	{
-		SetUniforms(isoSize, isoScale);
-
-		int ts = Mathf.CeilToInt(lodRes / _threadSizeX);
-
-		terrainShader.SetInts("chunkOffset", new int[] { chunk.x, 0, chunk.y });
-		terrainShader.SetInt("isoSize", isoSize);
-		terrainShader.SetInt("lodSize", lodSize);
-		terrainShader.SetInt("lodRes", lodRes);
-		terrainShader.SetInt("lodChunksPerAxis", lodSize / isoSize);
-
-		terrainShader.SetBuffer(_surfaceGeneratorKernel, "isoDists", isoDists);
-
-		terrainShader.Dispatch(_surfaceGeneratorKernel, ts, ts, 1);
 	}
 }

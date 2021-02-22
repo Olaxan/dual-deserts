@@ -20,7 +20,8 @@ float surfaceLevel;
 float surfaceScale;
 float surfaceMagnitude;
 
-float caveScale;
+float warpScale;
+float warpMagnitude;
 
 uint lodSize;
 uint lodChunksPerAxis;
@@ -39,29 +40,46 @@ float3 rot(float3 coord, float4x4 mat)
 				  dot(mat._31_32_33, coord));
 }
 
-float uSNoise(in float2 p)
+float usnoise(in float2 p)
 {
 	return (1.0 + snoise(p)) / 2.0;
+}
+
+float usnoise(in float3 p)
+{
+	return (1.0 + snoise(p)) / 2.0;
+}
+
+float3 snoise3(in float3 v)
+{
+	return float3 (
+		snoise(v),
+		snoise(v + 17.0),
+		snoise(v - 43.0)
+	);
 }
 
 float surface(in float3 p)
 {
 	float surf = surfaceLevel - p.y;
 
-	float3 c0 = rot(p, octaveMat0);
-	float3 c1 = rot(p, octaveMat1);
-	float3 c2 = rot(p, octaveMat2);
-	float3 c3 = rot(p, octaveMat3);
+	float3 warp = snoise3(p * warpScale);
+	float3 wp = p + warp * warpMagnitude;
 
-	surf += uSNoise(p.xz * surfaceScale * 1.000) * surfaceMagnitude;
-	surf += uSNoise(p.xz * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
-	surf += uSNoise(p.xz * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
-	surf += uSNoise(p.xz * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
-	surf += uSNoise(p.xz * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
-	surf += uSNoise(c0.xz * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
-	surf += uSNoise(c1.xz * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
-	surf += uSNoise(c2.xz * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
-	surf += uSNoise(c3.xz * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
+	float3 c0 = rot(wp, octaveMat0);
+	float3 c1 = rot(wp, octaveMat1);
+	float3 c2 = rot(wp, octaveMat2);
+	float3 c3 = rot(wp, octaveMat3);
+
+	surf += usnoise(wp * surfaceScale * 1.000) * surfaceMagnitude;
+	surf += usnoise(wp * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
+	surf += usnoise(wp * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
+	surf += usnoise(wp * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
+	surf += usnoise(wp * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+	surf += usnoise(c0 * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
+	surf += usnoise(c1 * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
+	surf += usnoise(c2 * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
+	surf += usnoise(c3 * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
 
 	return surf;
 }

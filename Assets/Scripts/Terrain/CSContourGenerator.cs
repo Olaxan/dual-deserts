@@ -88,22 +88,6 @@ public class CSContourGenerator : MonoBehaviour
 		buildQueue.Enqueue(chunk, priority);
 	}
 
-	public void SurfaceRemesh(TerrainData data, Vector2Int chunk)
-    {
-		int res = data.heightmapResolution - 1;
-		int sqrRes = res * res;
-
-		terrainGenerator.GenerateSurface(isoDistBuffer, chunk, Mathf.RoundToInt(data.size.x), res, size, scale);
-
-		float bytes = sqrRes / sizeof(float);
-		Debug.Log($"LOD {chunk}: Res = {res}x{res} ({sqrRes / 1024} kB), world = {data.size.x}x{data.size.z}x{data.size.y}, lodChunks = {data.size.x / size}");
-
-		float[,] surface = new float[res, res];
-		isoDistBuffer.GetData(surface, 0, 0, sqrRes);
-
-		data.SetHeights(0, 0, surface);
-    }
-
 	void GenerateChunk(Chunk chunk)
 	{
 
