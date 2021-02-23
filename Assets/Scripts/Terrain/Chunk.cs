@@ -9,6 +9,9 @@ public class Chunk : MonoBehaviour
 	public Material defaultMaterial;
 	public Vector3Int position;
 
+	public Vector3 WorldPos { get => transform.position; }
+	public float Size { get; private set; }
+
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
 	MeshCollider meshCollider;
@@ -46,11 +49,11 @@ public class Chunk : MonoBehaviour
 
 	}
 
-	public void Refresh(Vector3Int localPos, Vector3 worldPos)
+	public void Refresh(Vector3 worldPos, float size)
 	{
-		gameObject.name = localPos.ToString();
-		position = localPos;
-		gameObject.transform.position = worldPos;
+		gameObject.name = worldPos.ToString();
+		gameObject.transform.position = worldPos - Vector3.one * size / 2;
+		Size = size;
 	}
 
 	public void UpdateCollider()

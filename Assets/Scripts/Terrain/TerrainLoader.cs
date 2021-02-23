@@ -125,7 +125,7 @@ public class TerrainLoader : MonoBehaviour
 					newChunk = AddChunk();
 
 				
-				newChunk.Refresh(offsetPos, chunkOffset);
+				//newChunk.Refresh(offsetPos, chunkOffset);
 				loadedChunks.Add(offsetPos, newChunk);
 				chunks.Add(newChunk);
 				contourGenerator.RequestRemesh(newChunk, posSqrDist);

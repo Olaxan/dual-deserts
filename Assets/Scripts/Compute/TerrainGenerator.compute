@@ -1,5 +1,4 @@
 ﻿#pragma kernel CSGenerator
-#pragma kernel CSSurfaceGenerator
 
 #include "/Includes/Volume.cginc"
 #include "/Includes/Tables.cginc"
@@ -9,8 +8,7 @@
 //#define CLOSE_FIELD
 
 
-int3 chunkOffset;
-
+float3 chunkOffset;
 float3 noiseOffset;
 float3 noiseScale;
 
@@ -129,7 +127,7 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 	// Polygonized chunks are smaller than volume field
 	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
 
-	float3 pos = float3(id) + float3(isoAdjustedSize) * chunkOffset;
+	float3 pos = chunkOffset + float3(id) * isoScale;
 	float3 noisePos = (pos + noiseOffset) * noiseScale;
 
 	float d = density(noisePos);
@@ -137,27 +135,4 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 
 	isoDists[index] = d;
 	isoNormals[index] = n;
-}
-
-[numthreads(8, 8, 1)]
-void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
-{
-
-	// Polygonized chunks are smaller than volume field
-	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
-
-	uint step = lodSize / lodRes;
-
-	// Offset heightmap by half its width (because player is in center)
-	float halfSize = lodSize / 2;
-	float3 lodCenterOffset = float3(halfSize, 0, halfSize);
-
-	// Every id should be STEP units apart (the resolution of the heightmap)
-	float3 pos = float3(id.x, 0, id.y) * step + float3(isoAdjustedSize) * chunkOffset * isoScale;
-	float3 noisePos = (pos + noiseOffset) * noiseScale;
-	float3 offsetPos = (noisePos - lodCenterOffset);
-
-	int idx = id.x + lodRes * id.y;
-
-	isoDists[idx] = surface(offsetPos / isoScale) / (surfaceMagnitude / isoScale);
 }

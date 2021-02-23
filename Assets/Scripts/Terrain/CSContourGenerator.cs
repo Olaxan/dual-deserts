@@ -43,16 +43,12 @@ public class CSContourGenerator : MonoBehaviour
 
 	void Update()
 	{
-		for (int i = 0; i < chunksPerFrame; i++)
+		for (int i = 0; i < Mathf.Min(chunksPerFrame, buildQueue.Count); i++)
 		{
-			if (buildQueue.Count > 0)
-			{
-				Chunk chunk = buildQueue.Dequeue();
-				chunk.contour.Clear();
-				GenerateChunk(chunk);
-				chunk.gameObject.SetActive(true);
-			}
-			else return;
+			Chunk chunk = buildQueue.Dequeue();
+			chunk.contour.Clear();
+			GenerateChunk(chunk);
+			chunk.gameObject.SetActive(true);
 		}
 	}
 
@@ -97,15 +93,17 @@ public class CSContourGenerator : MonoBehaviour
 		int pointCount = size * size * size;
 		int indexCount = VoxelSize * VoxelSize * VoxelSize;
 
+		float chunkScale = chunk.Size / (float)size;
+
 		Vector3Int ts = new Vector3Int(
 				Mathf.CeilToInt(size / _threadSizeX), 
 				Mathf.CeilToInt(size / _threadSizeY), 
 				Mathf.CeilToInt(size / _threadSizeZ));
 
-		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.position, size, scale);
+		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.WorldPos, size, chunkScale);
 
 		contourGenerator.SetInt("isoSize", size); 
-		contourGenerator.SetFloat("isoScale", scale);
+		contourGenerator.SetFloat("isoScale", chunkScale);
 		contourGenerator.SetFloat("maxCornerDistance", maxCornerDistance);
 		contourGenerator.SetFloat("centerBias", centerBias);
 		contourGenerator.SetFloat("clampRange", clampRange);

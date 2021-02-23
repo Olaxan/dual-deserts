@@ -8,12 +8,16 @@ public class OctLoaderTest : MonoBehaviour
 
 	public int adjacency = 1;
 	public float lodVolumeSize = 1024;
-	public float volumeSize = 64;
+	public float logicalVolumeSize = 64;
+	public int voxelSize = 64;
 
-	public int tick = 16;	
-	int tickCounter = 0;
+	public bool drawBounds = false;
+
+	public GameObject viewer;
+	public Material defaultMaterial;
 
 	PointOctree<int> world;
+	List<Chunk> chunks;
 	Dictionary<Vector3, float> loadedChunks;
 	Queue<Chunk> unloadedChunks;
 
@@ -27,27 +31,34 @@ public class OctLoaderTest : MonoBehaviour
 
     void Update()
     {
-       if (tickCounter++ >= tick)
-	   {
-		   RebuildTree();
-		   tickCounter = 0;
-	   }
     }
 
 	void Setup()
 	{
+		chunks = new List<Chunk>();
 		loadedChunks = new Dictionary<Vector3, float>();
 		unloadedChunks = new Queue<Chunk>();
 
 		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
-		contourGenerator.Setup(Mathf.RoundToInt(volumeSize), 1.0f);
+		contourGenerator.Setup(voxelSize, 1.0f);
+	}
+
+	Chunk AddChunk()
+	{
+		GameObject obj = new GameObject();
+		obj.transform.parent = gameObject.transform;
+		Chunk comp = obj.AddComponent<Chunk>();
+		comp.defaultMaterial = defaultMaterial;
+		comp.Setup();
+
+		return comp;
 	}
 
 	void RebuildTree()
 	{
 		float halfVolumeSize = lodVolumeSize / 2.0f;
 
-		Vector3 tp = transform.position;
+		Vector3 tp = viewer.transform.position;
 
 		Vector3 gridPos = new Vector3(
 			Mathf.Round(tp.x / halfVolumeSize),
@@ -55,7 +66,7 @@ public class OctLoaderTest : MonoBehaviour
 			Mathf.Round(tp.z / halfVolumeSize)
 				) * halfVolumeSize;
 
-		world = new PointOctree<int>(lodVolumeSize, gridPos, volumeSize);
+		world = new PointOctree<int>(lodVolumeSize, gridPos, logicalVolumeSize);
 
 		int adjSqr = adjacency * adjacency;
 		int adjCube = adjacency * adjSqr;
@@ -67,8 +78,8 @@ public class OctLoaderTest : MonoBehaviour
 			int y = w / adjacency;
 			int z = w % adjacency;
 
-			Vector3 adj = tp + new Vector3(x, y, z) * volumeSize;
-			adj -= Vector3.one * (adjacency - 1) * volumeSize / 2;
+			Vector3 adj = tp + new Vector3(x, y, z) * logicalVolumeSize;
+			adj -= Vector3.one * (adjacency - 1) * logicalVolumeSize / 2;
 			world.Add(i, adj);
 		}
 
@@ -80,8 +91,20 @@ public class OctLoaderTest : MonoBehaviour
 			if (loadedChunks.ContainsKey(chunkNode.Center))
 				continue;
 
-			loadedChunks[chunkNode.Center] = chunkNode.SideLength;
 			c++;
+
+			Chunk newChunk;
+			if (unloadedChunks.Count > 0)
+				newChunk = unloadedChunks.Dequeue();
+			else 
+				newChunk = AddChunk();
+
+			float dist = (tp - chunkNode.Center).sqrMagnitude;
+
+			newChunk.Refresh(chunkNode.Center, chunkNode.SideLength);
+			loadedChunks[chunkNode.Center] = chunkNode.SideLength;
+			chunks.Add(newChunk);
+			contourGenerator.RequestRemesh(newChunk, Mathf.RoundToInt(dist));
 		}
 
 		Debug.Log($"{c} chunks need rebuilding ({chunkNodes.Count} total)");
@@ -89,7 +112,7 @@ public class OctLoaderTest : MonoBehaviour
 
 	void OnDrawGizmos()
 	{
-		if (Application.isPlaying)
+		if (Application.isPlaying && drawBounds)
 		{
 			world.DrawAllBounds();
 			world.DrawAllObjects();
