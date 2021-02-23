@@ -10,8 +10,7 @@ public class TerrainLoader : MonoBehaviour
 	public int updateFrequency = 16;
 
 	[Header("Draw Distance Settings")]
-	public int viewDistance = 3;
-	public int viewDepth = 1;
+	public int highQualityDist = 2;
 
 	[Header("World Settings")]
 	public float volumeScale = 1.0f;
@@ -63,6 +62,11 @@ public class TerrainLoader : MonoBehaviour
 		return chunkComp;
 	}
 
+	bool CheckVisible(Plane[] frustum, Bounds bounds)
+	{
+		return GeometryUtility.TestPlanesAABB(frustum, bounds);
+	}
+
 	void UpdateChunks()
 	{
 		
@@ -78,7 +82,7 @@ public class TerrainLoader : MonoBehaviour
 				Mathf.RoundToInt(viewPos.y / scaledVolumeSize),
 				Mathf.RoundToInt(viewPos.z / scaledVolumeSize));
 
-		int sqrDist = viewDistance * viewDistance;
+		int sqrDist = highQualityDist * highQualityDist;
 
 		for (int i = chunks.Count - 1; i >= 0; i--)
 		{
@@ -93,48 +97,40 @@ public class TerrainLoader : MonoBehaviour
 			}
 		}
 
-		for (int x = -viewDistance; x <= viewDistance; x++)
+		for (int x = -highQualityDist; x <= highQualityDist; x++)
 		{
-			for (int y = -viewDepth; y <= viewDepth; y++)
+			for (int z = -highQualityDist; z <= highQualityDist; z++)
 			{
-				for (int z = -viewDistance; z <= viewDistance; z++)
-				{
-					Vector3Int pos = new Vector3Int(x, y, z);
-					Vector3Int offsetPos = pos + viewChunk;
-					int posSqrDist = pos.sqrMagnitude;
+				Vector3Int pos = new Vector3Int(x, 0, z);
+				Vector3Int offsetPos = pos + viewChunk;
+				int posSqrDist = pos.sqrMagnitude;
 
-					if (loadedChunks.ContainsKey(offsetPos))
-						continue;
+				if (loadedChunks.ContainsKey(offsetPos))
+					continue;
 
-					if (posSqrDist > sqrDist)
-						continue;
+				if (posSqrDist > sqrDist)
+					continue;
 
-					Vector3 chunkOffset =  (Vector3)offsetPos * scaledVolumeSize;
-					volumeBounds.center = chunkOffset;
+				Vector3 chunkOffset =  (Vector3)offsetPos * scaledVolumeSize;
+				volumeBounds.center = chunkOffset;
 
-					if (!CheckVisible(camPlanes, volumeBounds) && posSqrDist > 1)
-						continue;
+				//if (!CheckVisible(camPlanes, volumeBounds) && posSqrDist > 1)
+				//	continue;
 
-					Chunk newChunk;
+				Chunk newChunk;
 
-					if (unloadedChunks.Count > 0)
-						newChunk = unloadedChunks.Dequeue();
-					else
-						newChunk = AddChunk();
+				if (unloadedChunks.Count > 0)
+					newChunk = unloadedChunks.Dequeue();
+				else
+					newChunk = AddChunk();
 
-					
-					newChunk.Refresh(offsetPos, chunkOffset);
-					loadedChunks.Add(offsetPos, newChunk);
-					chunks.Add(newChunk);
-					contourGenerator.RequestRemesh(newChunk, posSqrDist);
-				}
+				
+				newChunk.Refresh(offsetPos, chunkOffset);
+				loadedChunks.Add(offsetPos, newChunk);
+				chunks.Add(newChunk);
+				contourGenerator.RequestRemesh(newChunk, posSqrDist);
 			}
 		}
-	}
-
-	bool CheckVisible(Plane[] frustum, Bounds bounds)
-	{
-		return GeometryUtility.TestPlanesAABB(frustum, bounds);
 	}
 
 	public void UpdateAll()
