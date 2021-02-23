@@ -1,5 +1,4 @@
 ﻿#pragma kernel CSGenerator
-#pragma kernel CSSurfaceGenerator
 
 #include "/Includes/Volume.cginc"
 #include "/Includes/Tables.cginc"
@@ -9,8 +8,7 @@
 //#define CLOSE_FIELD
 
 
-int3 chunkOffset;
-
+float3 chunkOffset;
 float3 noiseOffset;
 float3 noiseScale;
 
@@ -40,43 +38,46 @@ float3 rot(float3 coord, float4x4 mat)
 				  dot(mat._31_32_33, coord));
 }
 
-float uSNoise(in float2 p)
+float usnoise(in float2 p)
 {
 	return (1.0 + snoise(p)) / 2.0;
 }
 
-float uSNoise(in float3 p)
+float usnoise(in float3 p)
 {
 	return (1.0 + snoise(p)) / 2.0;
 }
 
-float3 colorNs(in float3 p)
+float3 snoise3(in float3 v)
 {
-	return float3(
-		snoise(p),
-		snoise(p + 17.0),
-		snoise(p - 43.0)
-		);
+	return float3 (
+		snoise(v),
+		snoise(v + 17.0),
+		snoise(v - 43.0)
+	);
 }
 
 float surface(in float3 p)
 {
 	float surf = surfaceLevel - p.y;
 
-	float3 c0 = rot(p, octaveMat0);
-	float3 c1 = rot(p, octaveMat1);
-	float3 c2 = rot(p, octaveMat2);
-	float3 c3 = rot(p, octaveMat3);
+	float3 warp = snoise3(p * warpScale);
+	float3 wp = p + warp * warpMagnitude;
 
-	surf += uSNoise(p * surfaceScale * 1.000) * surfaceMagnitude;
-	surf += uSNoise(p * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
-	surf += uSNoise(p * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
-	surf += uSNoise(p * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
-	surf += uSNoise(p * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
-	surf += uSNoise(c0 * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
-	surf += uSNoise(c1 * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
-	surf += uSNoise(c2 * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
-	surf += uSNoise(c3 * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
+	float3 c0 = rot(wp, octaveMat0);
+	float3 c1 = rot(wp, octaveMat1);
+	float3 c2 = rot(wp, octaveMat2);
+	float3 c3 = rot(wp, octaveMat3);
+
+	surf += usnoise(wp * surfaceScale * 1.000) * surfaceMagnitude;
+	surf += usnoise(wp * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
+	surf += usnoise(wp * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
+	surf += usnoise(wp * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
+	surf += usnoise(wp * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
+	surf += usnoise(c0 * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
+	surf += usnoise(c1 * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
+	surf += usnoise(c2 * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
+	surf += usnoise(c3 * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
 
 	return surf;
 }
@@ -84,22 +85,17 @@ float surface(in float3 p)
 float density(in float3 p)
 {
 
-	float3 warp = colorNs(p * warpScale);
-	float3 wp = p + warp * warpMagnitude;
+	float d = -surface(p);
 
-	float d = -surface(wp);
-
-	float cube = sdRoundBox(wp, float3(15, 15, 10), 2.0);
-	float torus = sdTorus(wp, float2(50, 5));
-	float cyl = sdCappedCylinder(wp, 25, 25);
+	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
+	float torus = sdTorus(p, float2(50, 5));
+	float cyl = sdCappedCylinder(p, 25, 25);
 
 	float a = smin(d, cube, 10).x;
 	float b = smin(a, torus, 10).x;
 	float c = smin(b, cyl, 10).x;
 
-	float cut = sdSphere(wp + float3(0, -148, 0), 48);
-
-	return opSubtraction(cut, c);
+	return c;
 
 }
 
@@ -131,7 +127,7 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 	// Polygonized chunks are smaller than volume field
 	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
 
-	float3 pos = float3(id) + float3(isoAdjustedSize) * chunkOffset;
+	float3 pos = chunkOffset + float3(id) * isoScale;
 	float3 noisePos = (pos + noiseOffset) * noiseScale;
 
 	float d = density(noisePos);
@@ -139,27 +135,4 @@ void CSGenerator(uint3 id : SV_DispatchThreadID)
 
 	isoDists[index] = d;
 	isoNormals[index] = n;
-}
-
-[numthreads(8, 8, 1)]
-void CSSurfaceGenerator(uint3 id : SV_DispatchThreadID)
-{
-
-	// Polygonized chunks are smaller than volume field
-	uint3 isoAdjustedSize = isoSize - uint3(2, 2, 2);
-
-	uint step = lodSize / lodRes;
-
-	// Offset heightmap by half its width (because player is in center)
-	float halfSize = lodSize / 2;
-	float3 lodCenterOffset = float3(halfSize, 0, halfSize);
-
-	// Every id should be STEP units apart (the resolution of the heightmap)
-	float3 pos = float3(id.x, 0, id.y) * step + float3(isoAdjustedSize) * chunkOffset * isoScale;
-	float3 noisePos = (pos + noiseOffset) * noiseScale;
-	float3 offsetPos = (noisePos - lodCenterOffset);
-
-	int idx = id.x + lodRes * id.y;
-
-	isoDists[idx] = surface(offsetPos / isoScale) / (surfaceMagnitude / isoScale);
 }
