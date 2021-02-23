@@ -93,7 +93,7 @@ public class CSContourGenerator : MonoBehaviour
 		int pointCount = size * size * size;
 		int indexCount = VoxelSize * VoxelSize * VoxelSize;
 
-		float chunkScale = chunk.Size / (float)size;
+		float chunkScale = chunk.Size / (float)(size - 2);
 
 		Vector3Int ts = new Vector3Int(
 				Mathf.CeilToInt(size / _threadSizeX), 
