@@ -57,7 +57,7 @@ MonoBehaviour:
     showEyeDropper: 1
   maxFogDistance:
     m_OverrideState: 1
-    m_Value: 2048
+    m_Value: 1024
     min: 0
   mipFogMaxMip:
     m_OverrideState: 0
