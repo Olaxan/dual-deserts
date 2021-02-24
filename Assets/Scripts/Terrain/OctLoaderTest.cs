@@ -9,6 +9,7 @@ public class OctLoaderTest : MonoBehaviour
 
 	public int adjacency = 1;
 	public int lodVolumeSize = 1024;
+	public int lodTresholdMult = 4;
 	public int logicalVolumeSize = 64;
 	public int voxelSize = 64;
 
@@ -69,16 +70,21 @@ public class OctLoaderTest : MonoBehaviour
 	{
 		Vector3 tp = viewer.transform.position;
 
+		int halfSize = logicalVolumeSize / 2;
+
 		Vector3Int chunk = new Vector3Int(
-				Mathf.RoundToInt(tp.x / logicalVolumeSize),
-				Mathf.RoundToInt(tp.y / logicalVolumeSize),
-				Mathf.RoundToInt(tp.z / logicalVolumeSize)
+				Mathf.FloorToInt(tp.x / (logicalVolumeSize / lodTresholdMult)),
+				Mathf.FloorToInt(tp.y / (logicalVolumeSize / lodTresholdMult)),
+				Mathf.FloorToInt(tp.z / (logicalVolumeSize / lodTresholdMult))
 				);
 
 		if (chunk != lastPos)
 		{
+			Debug.Log($"Moved to {chunk}");
 			RebuildTree(tp);
 			lastPos = chunk;
+
+			gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
 		}
 	}
 
