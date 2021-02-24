@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(CSContourGenerator))]
@@ -17,27 +18,31 @@ public class OctLoaderTest : MonoBehaviour
 	public Material defaultMaterial;
 
 	PointOctree<int> world;
-	List<Chunk> chunks;
-	Dictionary<Vector3, float> loadedChunks;
+	HashSet<PointOctreeNode<int>> loadedNodes;
+	Dictionary<Vector3, Chunk> loadedChunks;
 	Queue<Chunk> unloadedChunks;
+
+	Vector3Int lastPos;
 
 	CSContourGenerator contourGenerator;
 
     void Start()
     {
 		Setup();
-		RebuildTree();
     }
 
     void Update()
     {
+		ChunkStep();	
     }
 
 	void Setup()
 	{
-		chunks = new List<Chunk>();
-		loadedChunks = new Dictionary<Vector3, float>();
+		loadedChunks = new Dictionary<Vector3, Chunk>();
 		unloadedChunks = new Queue<Chunk>();
+		loadedNodes = new HashSet<PointOctreeNode<int>>();
+
+		lastPos = Vector3Int.one * 999;
 
 		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
 		contourGenerator.Setup(voxelSize, 1.0f);
@@ -54,11 +59,32 @@ public class OctLoaderTest : MonoBehaviour
 		return comp;
 	}
 
-	void RebuildTree()
+	void RecycleChunk(Chunk chunk)
+	{
+		chunk.gameObject.SetActive(false);
+		unloadedChunks.Enqueue(chunk);
+	}
+
+	void ChunkStep()
+	{
+		Vector3 tp = viewer.transform.position;
+
+		Vector3Int chunk = new Vector3Int(
+				Mathf.RoundToInt(tp.x / logicalVolumeSize),
+				Mathf.RoundToInt(tp.y / logicalVolumeSize),
+				Mathf.RoundToInt(tp.z / logicalVolumeSize)
+				);
+
+		if (chunk != lastPos)
+		{
+			RebuildTree(tp);
+			lastPos = chunk;
+		}
+	}
+
+	void RebuildTree(Vector3 tp)
 	{
 		float halfVolumeSize = lodVolumeSize / 2.0f;
-
-		Vector3 tp = viewer.transform.position;
 
 		Vector3 gridPos = new Vector3(
 			Mathf.Round(tp.x / halfVolumeSize),
@@ -83,14 +109,14 @@ public class OctLoaderTest : MonoBehaviour
 			world.Add(i, adj);
 		}
 
-		var chunkNodes = world.GetAllLeafNodes();
+		HashSet<PointOctreeNode<int>> newNodes = world.GetAllLeafNodes();
+
+		var chunksToLoad = newNodes.Except(loadedNodes);
+		var chunksToUnload = loadedNodes.Except(newNodes);
 
 		int c = 0;
-		foreach (var chunkNode in chunkNodes)
+		foreach (var chunkNode in chunksToLoad)
 		{
-			if (loadedChunks.ContainsKey(chunkNode.Center))
-				continue;
-
 			c++;
 
 			Chunk newChunk;
@@ -101,18 +127,25 @@ public class OctLoaderTest : MonoBehaviour
 
 			float dist = (tp - chunkNode.Center).sqrMagnitude;
 
+			loadedChunks[chunkNode.Center] = newChunk;
 			newChunk.Refresh(chunkNode.Center, chunkNode.SideLength);
-			loadedChunks[chunkNode.Center] = chunkNode.SideLength;
-			chunks.Add(newChunk);
 			contourGenerator.RequestRemesh(newChunk, Mathf.RoundToInt(dist));
 		}
+		
+		foreach (var chunkNode in chunksToUnload)
+		{
+			Chunk unloadChunk = loadedChunks[chunkNode.Center];
+			loadedChunks.Remove(chunkNode.Center);
 
-		Debug.Log($"{c} chunks need rebuilding ({chunkNodes.Count} total)");
+			RecycleChunk(unloadChunk);
+		}
+
+		loadedNodes = newNodes;
 	}
 
 	public void UpdateChunks()
     {
-		foreach (var chunk in chunks)
+		foreach (var chunk in loadedChunks.Values)
 			contourGenerator.RequestRemesh(chunk, 0);
     }
 

@@ -52,7 +52,7 @@ public class Chunk : MonoBehaviour
 	public void Refresh(Vector3 worldPos, float size)
 	{
 		gameObject.name = worldPos.ToString();
-		gameObject.transform.position = worldPos - Vector3.one * size / 2;
+		gameObject.transform.position = worldPos - Vector3.one * size / 2.0f;
 		Size = size;
 	}
 

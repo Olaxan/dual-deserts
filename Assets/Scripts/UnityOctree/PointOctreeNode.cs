@@ -203,7 +203,7 @@ public class PointOctreeNode<T> {
 		}
 	}
 
-	public void GetAllLeafNodes(List<PointOctreeNode<T>> result)
+	public void GetAllLeafNodes(HashSet<PointOctreeNode<T>> result)
 	{
 		if (children == null) {
 			result.Add(this);
@@ -358,6 +358,19 @@ public class PointOctreeNode<T> {
 
         return false;
     }
+
+	public bool Equals(PointOctreeNode<T> n1, PointOctreeNode<T> n2)
+	{
+		if (n1 == null || n2 == null)
+			return (n1 == null && n2 == null);
+
+		return (n1.Center == n2.Center);
+	}
+
+	public int GetHashCode(PointOctreeNode<T> n1)
+	{
+		return n1.Center.GetHashCode();
+	}
 
     /*
 	/// <summary>

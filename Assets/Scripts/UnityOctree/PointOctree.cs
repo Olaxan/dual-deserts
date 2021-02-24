@@ -167,8 +167,8 @@ public class PointOctree<T> {
 		return objects;
 	}
 
-	public ICollection<PointOctreeNode<T>> GetAllLeafNodes() {
-		var objects = new List<PointOctreeNode<T>>();
+	public HashSet<PointOctreeNode<T>> GetAllLeafNodes() {
+		var objects = new HashSet<PointOctreeNode<T>>();
 		rootNode.GetAllLeafNodes(objects);
 		return objects;
 	}
