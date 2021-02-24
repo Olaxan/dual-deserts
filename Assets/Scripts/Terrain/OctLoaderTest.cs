@@ -8,8 +8,8 @@ public class OctLoaderTest : MonoBehaviour
 {
 
 	public int adjacency = 1;
-	public float lodVolumeSize = 1024;
-	public float logicalVolumeSize = 64;
+	public int lodVolumeSize = 1024;
+	public int logicalVolumeSize = 64;
 	public int voxelSize = 64;
 
 	public bool drawBounds = false;
@@ -17,9 +17,9 @@ public class OctLoaderTest : MonoBehaviour
 	public GameObject viewer;
 	public Material defaultMaterial;
 
-	PointOctree<int> world;
-	HashSet<PointOctreeNode<int>> loadedNodes;
-	Dictionary<Vector3, Chunk> loadedChunks;
+	PointOctreeInt<int> world;
+	HashSet<PointOctreeIntNode<int>> loadedNodes;
+	Dictionary<Vector3Int, Chunk> loadedChunks;
 	Queue<Chunk> unloadedChunks;
 
 	Vector3Int lastPos;
@@ -38,9 +38,9 @@ public class OctLoaderTest : MonoBehaviour
 
 	void Setup()
 	{
-		loadedChunks = new Dictionary<Vector3, Chunk>();
+		loadedChunks = new Dictionary<Vector3Int, Chunk>();
 		unloadedChunks = new Queue<Chunk>();
-		loadedNodes = new HashSet<PointOctreeNode<int>>();
+		loadedNodes = new HashSet<PointOctreeIntNode<int>>();
 
 		lastPos = Vector3Int.one * 999;
 
@@ -84,15 +84,15 @@ public class OctLoaderTest : MonoBehaviour
 
 	void RebuildTree(Vector3 tp)
 	{
-		float halfVolumeSize = lodVolumeSize / 2.0f;
+		int halfVolumeSize = lodVolumeSize / 2;
 
-		Vector3 gridPos = new Vector3(
-			Mathf.Round(tp.x / halfVolumeSize),
-			Mathf.Round(tp.y / halfVolumeSize),
-			Mathf.Round(tp.z / halfVolumeSize)
+		Vector3Int gridPos = new Vector3Int(
+			Mathf.RoundToInt(tp.x / halfVolumeSize),
+			Mathf.RoundToInt(tp.y / halfVolumeSize),
+			Mathf.RoundToInt(tp.z / halfVolumeSize)
 				) * halfVolumeSize;
 
-		world = new PointOctree<int>(lodVolumeSize, gridPos, logicalVolumeSize);
+		world = new PointOctreeInt<int>(lodVolumeSize, gridPos, logicalVolumeSize);
 
 		int adjSqr = adjacency * adjacency;
 		int adjCube = adjacency * adjSqr;
@@ -104,21 +104,23 @@ public class OctLoaderTest : MonoBehaviour
 			int y = w / adjacency;
 			int z = w % adjacency;
 
-			Vector3 adj = tp + new Vector3(x, y, z) * logicalVolumeSize;
-			adj -= Vector3.one * (adjacency - 1) * logicalVolumeSize / 2;
+			Vector3Int adj = Vector3Int.RoundToInt(tp) + new Vector3Int(x, y, z) * logicalVolumeSize;
+			adj -= Vector3Int.one * (adjacency - 1) * logicalVolumeSize / 2;
 			world.Add(i, adj);
 		}
 
-		HashSet<PointOctreeNode<int>> newNodes = world.GetAllLeafNodes();
+		HashSet<PointOctreeIntNode<int>> newNodes = world.GetAllLeafNodes();
 
-		var chunksToLoad = newNodes.Except(loadedNodes);
-		var chunksToUnload = loadedNodes.Except(newNodes);
+		var comparer = new PointOctreeIntNodeEqualityComparer<int>();
 
-		int c = 0;
+		var chunksToLoad = newNodes.Except(loadedNodes, comparer);
+		var chunksToUnload = loadedNodes.Except(newNodes, comparer);
+
+		loadedNodes = newNodes;
+
+		Debug.Log($"Loading {chunksToLoad.Count()} chunks of {newNodes.Count} total...");
 		foreach (var chunkNode in chunksToLoad)
 		{
-			c++;
-
 			Chunk newChunk;
 			if (unloadedChunks.Count > 0)
 				newChunk = unloadedChunks.Dequeue();
@@ -132,15 +134,19 @@ public class OctLoaderTest : MonoBehaviour
 			contourGenerator.RequestRemesh(newChunk, Mathf.RoundToInt(dist));
 		}
 		
+		Debug.Log($"Unloading {chunksToUnload.Count()} chunks...");
 		foreach (var chunkNode in chunksToUnload)
 		{
-			Chunk unloadChunk = loadedChunks[chunkNode.Center];
-			loadedChunks.Remove(chunkNode.Center);
+			if (loadedChunks.ContainsKey(chunkNode.Center))
+			{
+				Chunk unloadChunk = loadedChunks[chunkNode.Center];
+				loadedChunks.Remove(chunkNode.Center);
 
-			RecycleChunk(unloadChunk);
+				RecycleChunk(unloadChunk);
+			}
+			else Debug.Log($"{chunkNode.Center} not loaded!");
 		}
 
-		loadedNodes = newNodes;
 	}
 
 	public void UpdateChunks()
