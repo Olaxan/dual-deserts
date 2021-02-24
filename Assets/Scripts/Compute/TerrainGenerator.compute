@@ -69,15 +69,15 @@ float surface(in float3 p)
 	float3 c2 = rot(wp, octaveMat2);
 	float3 c3 = rot(wp, octaveMat3);
 
-	surf += usnoise(wp * surfaceScale * 1.000) * surfaceMagnitude;
-	surf += usnoise(wp * surfaceScale * 4.130) * surfaceMagnitude / 3.96;
-	surf += usnoise(wp * surfaceScale * 7.980) * surfaceMagnitude / 8.11;
-	surf += usnoise(wp * surfaceScale * 1.960) * surfaceMagnitude / 2.13;
-	surf += usnoise(wp * surfaceScale * 16.15) * surfaceMagnitude / 15.96;
-	surf += usnoise(c0 * surfaceScale * 64.13) * surfaceMagnitude / 63.99;
-	surf += usnoise(c1 * surfaceScale * 32.11) * surfaceMagnitude / 31.97;
-	surf += usnoise(c2 * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
-	surf += usnoise(c3 * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
+	surf += usnoise(wp * surfaceScale * 1.000 ) * surfaceMagnitude;
+	surf += usnoise(wp * surfaceScale * 4.130 ) * surfaceMagnitude / 3.96;
+	surf += usnoise(wp * surfaceScale * 7.980 ) * surfaceMagnitude / 8.11;
+	surf += usnoise(wp * surfaceScale * 1.960 ) * surfaceMagnitude / 2.13;
+	surf += usnoise(wp * surfaceScale * 16.15 ) * surfaceMagnitude / 15.96;
+	surf += usnoise(wp * surfaceScale * 64.13 ) * surfaceMagnitude / 63.99;
+	surf += usnoise(wp * surfaceScale * 32.11 ) * surfaceMagnitude / 31.97;
+	surf += usnoise(wp * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
+	surf += usnoise(wp * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
 
 	return surf;
 }
@@ -101,7 +101,7 @@ float density(in float3 p)
 
 float3 calcNormal(in float3 p)
 {
-	const float h = derivativeStep; // 0.0001
+	const float h = derivativeStep * isoScale; // 0.0001
 	const float2 k = float2(1, -1);
 	return normalize(
 		k.xyy * density(p + k.xyy * h) +

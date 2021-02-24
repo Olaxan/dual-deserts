@@ -110,6 +110,12 @@ public class OctLoaderTest : MonoBehaviour
 		Debug.Log($"{c} chunks need rebuilding ({chunkNodes.Count} total)");
 	}
 
+	public void UpdateChunks()
+    {
+		foreach (var chunk in chunks)
+			contourGenerator.RequestRemesh(chunk, 0);
+    }
+
 	void OnDrawGizmos()
 	{
 		if (Application.isPlaying && drawBounds)
