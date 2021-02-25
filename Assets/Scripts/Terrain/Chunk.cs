@@ -12,6 +12,12 @@ public class Chunk : MonoBehaviour
 	public Vector3 WorldPos { get => transform.position; }
 	public float Size { get; private set; }
 
+	public float Opacity 
+	{ 
+		get => meshRenderer.material.GetFloat("_opacity"); 
+		set => meshRenderer.material.SetFloat("_opacity", value); 
+	}
+
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
 	MeshCollider meshCollider;

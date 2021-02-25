@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using MEC;
 
 
 [RequireComponent(typeof(CSContourGenerator))]
@@ -14,6 +15,7 @@ public class OctLoaderTest : MonoBehaviour
 
 	public int lodVolumeSize = 1024;
 	public int lodLogicalVolumeSize = 64;
+	public int lodFadeOutFrames = 30;
 
 	public bool drawBounds = false;
 
@@ -65,6 +67,17 @@ public class OctLoaderTest : MonoBehaviour
 		return comp;
 	}
 
+	IEnumerator<float> _FadeAndRecycle(Chunk chunk)
+    {
+		for (int i = 0; i < lodFadeOutFrames; i++)
+        {
+			chunk.Opacity = (float)i / lodFadeOutFrames;
+			yield return Timing.WaitForOneFrame;
+        }
+
+		RecycleChunk(chunk);
+    }
+
 	void RecycleChunk(Chunk chunk)
 	{
 		chunk.gameObject.SetActive(false);
@@ -95,7 +108,7 @@ public class OctLoaderTest : MonoBehaviour
 
 			Chunk chunk = loadedChunks[node.Center];
 			loadedChunks.Remove(node.Center);
-			RecycleChunk(chunk);
+			Timing.RunCoroutine(_FadeAndRecycle(chunk));
 		}
 	}
 
