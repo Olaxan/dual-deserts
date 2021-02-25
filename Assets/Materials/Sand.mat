@@ -48,6 +48,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: ebbd111a615c42746bc8e1b08ba834de, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _AlbedoTexture:
+        m_Texture: {fileID: 2800000, guid: b9b648bc973dc6348bbd54c54188d9f2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _AnisotropyMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -272,6 +276,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NormalTexture:
+        m_Texture: {fileID: 2800000, guid: ebbd111a615c42746bc8e1b08ba834de, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -366,6 +374,7 @@ Material:
     - _AlphaSrcBlend: 1
     - _AmbientPower: 0
     - _Anisotropy: 0
+    - _Blend: 1
     - _BlendMode: 0
     - _BlendSharpness: 1
     - _Brightness: 0
@@ -420,6 +429,7 @@ Material:
     - _DistortionSrcBlend: 1
     - _DistortionVectorBias: -1
     - _DistortionVectorScale: 2
+    - _DitherSize: 1
     - _DontMix: 1
     - _DoubleSidedEnable: 0
     - _DoubleSidedNormalMode: 1
@@ -527,7 +537,7 @@ Material:
     - _LmapEnable: 0
     - _MainTexturePower: 0
     - _MaterialID: 1
-    - _Metallic: 0
+    - _Metallic: 0.1
     - _Metallic0: 0
     - _Metallic1: 0
     - _Metallic2: 0
@@ -545,6 +555,7 @@ Material:
     - _NormalScale3: 1
     - _ObjectScaleAffectTile: 0
     - _OcclusionStrength: 1
+    - _Opacity: 1
     - _OpacityAsDensity0: 0
     - _OpacityAsDensity1: 0
     - _OpacityAsDensity2: 0
@@ -594,7 +605,7 @@ Material:
     - _ShowRight: 0
     - _ShowTexture: 1
     - _ShowTop: 1
-    - _Smoothness: 0.371
+    - _Smoothness: 0.25
     - _Smoothness0: 0
     - _Smoothness1: 0.33
     - _Smoothness2: 0.5
@@ -653,6 +664,7 @@ Material:
     - _Thickness2: 1
     - _Thickness3: 1
     - _ThicknessMultiplier: 1
+    - _Tiling: 0.1
     - _TransmissionEnable: 1
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
@@ -690,6 +702,7 @@ Material:
     m_Colors:
     - Color_5668FFCB: {r: 1, g: 1, b: 1, a: 1}
     - _AOColor: {r: 0, g: 0, b: 0, a: 1}
+    - _AlbedoColor: {r: 1, g: 1, b: 1, a: 1}
     - _AmbientColor: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor0: {r: 1, g: 1, b: 1, a: 1}

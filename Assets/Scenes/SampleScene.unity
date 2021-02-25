@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.22146629, g: 0.18580832, b: 0.17558181, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1144,7 +1144,8 @@ MonoBehaviour:
   voxelSize: 64
   lodVolumeSize: 8192
   lodLogicalVolumeSize: 64
-  drawBounds: 1
+  lodFadeOutFrames: 30
+  drawBounds: 0
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
   worldObjects:
   - terrainObject: {fileID: 1898698331}

@@ -71,7 +71,7 @@ public class OctLoaderTest : MonoBehaviour
     {
 		for (int i = 0; i < lodFadeOutFrames; i++)
         {
-			chunk.Opacity = (float)i / lodFadeOutFrames;
+			chunk.Opacity = 1f - (float)i / lodFadeOutFrames;
 			yield return Timing.WaitForOneFrame;
         }
 
@@ -108,6 +108,7 @@ public class OctLoaderTest : MonoBehaviour
 
 			Chunk chunk = loadedChunks[node.Center];
 			loadedChunks.Remove(node.Center);
+			//RecycleChunk(chunk);
 			Timing.RunCoroutine(_FadeAndRecycle(chunk));
 		}
 	}
@@ -140,6 +141,13 @@ public class OctLoaderTest : MonoBehaviour
 
 		gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
 	}
+
+	int piss = 0;
+	public void FadeChunk()
+    {
+		Chunk c = loadedChunks.ElementAt(piss++).Value;
+		Timing.RunCoroutine(_FadeAndRecycle(c));
+    }
 
 	public void UpdateChunks()
     {

@@ -12,5 +12,8 @@ public class OctLoaderInspector : Editor
 
         if (GUILayout.Button("Update Terrain"))
             loader.UpdateChunks();
+
+        if (GUILayout.Button("Fade a Chunk"))
+            loader.FadeChunk();
     }
 }

@@ -14,8 +14,8 @@ public class Chunk : MonoBehaviour
 
 	public float Opacity 
 	{ 
-		get => meshRenderer.material.GetFloat("_opacity"); 
-		set => meshRenderer.material.SetFloat("_opacity", value); 
+		get => meshRenderer.material.GetFloat("_Opacity"); 
+		set => meshRenderer.material.SetFloat("_Opacity", value); 
 	}
 
 	MeshFilter meshFilter;

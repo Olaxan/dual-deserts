@@ -49,6 +49,7 @@ public class CSContourGenerator : MonoBehaviour
 			chunk.contour.Clear();
 			GenerateChunk(chunk);
 			chunk.gameObject.SetActive(true);
+			chunk.Opacity = 1f;
 		}
 	}
 
