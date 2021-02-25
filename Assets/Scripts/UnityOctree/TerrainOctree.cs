@@ -43,9 +43,12 @@ public class TerrainOctree
 
 	// #### PUBLIC METHODS ####
 
-	public void Evaluate(TerrainObject viewer, List<TerrainObject> additionalObjects)
+	public void Evaluate(
+			List<TerrainObject> terrainObjects,
+			HashSet<TerrainOctreeNode> newLeaves,
+			HashSet<TerrainOctreeNode> trimmedLeaves)
     {
-		rootNode.Evaluate(viewer, additionalObjects);
+		rootNode.Evaluate(terrainObjects, newLeaves, trimmedLeaves);
     }
 
 	public HashSet<TerrainOctreeNode> GetAllLeafNodes() {

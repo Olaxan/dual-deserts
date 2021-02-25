@@ -41,28 +41,74 @@ public class TerrainOctreeNode {
 	// #### PUBLIC METHODS ####
 	//
 	
-	public void Evaluate(TerrainObject viewer, List<TerrainObject> additionalObjects)
+	public void Evaluate(
+			List<TerrainObject> terrainObjects, 
+			HashSet<TerrainOctreeNode> newLeaves, 
+			HashSet<TerrainOctreeNode> trimmedLeaves)
 	{
-		float minDist = viewer.GetDistanceTo(Center);
+		if (terrainObjects.Count == 0)
+			return;
 
-		if (additionalObjects.Count > 0)
-			minDist = Mathf.Min(minDist, additionalObjects.Min(obj => obj.GetDistanceTo(Center)));
+		float minDist = terrainObjects.Min(obj => obj.GetDistanceTo(Center));
 
 		bool shouldSplit = (minDist < SideLength && SideLength > minSize);
 
 		if (shouldSplit)
 		{
 			if (!HasChildren)
-				Split();
+			{
+				Split(newLeaves);
+				newLeaves.Remove(this);
+				trimmedLeaves.Add(this);
+			}
 
 			foreach (var child in children)
 			{
-				child.Evaluate(viewer, additionalObjects);
+				child.Evaluate(terrainObjects, newLeaves, trimmedLeaves);
 			}
 		}
 		else if (HasChildren)
 		{
-			Merge();
+			Merge(trimmedLeaves);
+			newLeaves.Add(this);
+		}
+	}
+
+	void Split(HashSet<TerrainOctreeNode> newLeaves) {
+		int quarter = SideLength / 4;
+		int newLength = SideLength / 2;
+		children = new TerrainOctreeNode[8];
+		children[0] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(-quarter, quarter, -quarter));
+		children[1] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(quarter, quarter, -quarter));
+		children[2] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(-quarter, quarter, quarter));
+		children[3] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(quarter, quarter, quarter));
+		children[4] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(-quarter, -quarter, -quarter));
+		children[5] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(quarter, -quarter, -quarter));
+		children[6] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(-quarter, -quarter, quarter));
+		children[7] = new TerrainOctreeNode(newLength, minSize, 
+				Center + new Vector3Int(quarter, -quarter, quarter));
+
+		newLeaves.UnionWith(children);
+	}
+
+	void Merge(HashSet<TerrainOctreeNode> trimmedLeaves) 
+	{
+		if (HasChildren)
+		{
+			foreach (var child in children)
+			{
+				trimmedLeaves.Add(child);
+				child.Merge(trimmedLeaves);
+			}
+
+			children = null;
 		}
 	}
 
@@ -164,32 +210,6 @@ public class TerrainOctreeNode {
 		childBounds[5] = new Bounds(Center + new Vector3(quarter, -quarter, -quarter), childActualSize);
 		childBounds[6] = new Bounds(Center + new Vector3(-quarter, -quarter, quarter), childActualSize);
 		childBounds[7] = new Bounds(Center + new Vector3(quarter, -quarter, quarter), childActualSize);
-	}
-
-	/// <summary>
-	/// Splits the octree into eight children.
-	/// </summary>
-	void Split() {
-		int quarter = SideLength / 4;
-		int newLength = SideLength / 2;
-		children = new TerrainOctreeNode[8];
-		children[0] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(-quarter, quarter, -quarter));
-		children[1] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(quarter, quarter, -quarter));
-		children[2] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(-quarter, quarter, quarter));
-		children[3] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(quarter, quarter, quarter));
-		children[4] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(-quarter, -quarter, -quarter));
-		children[5] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(quarter, -quarter, -quarter));
-		children[6] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(-quarter, -quarter, quarter));
-		children[7] = new TerrainOctreeNode(newLength, minSize, Center + new Vector3Int(quarter, -quarter, quarter));
-	}
-
-	/// <summary>
-	/// Merge all children into this node - the opposite of Split.
-	/// Note: We only have to check one level down since a merge will never happen if the children already have children,
-	/// since THAT won't happen unless there are already too many objects to merge.
-	/// </summary>
-	void Merge() {
-		children = null;
 	}
 
 	/// <summary>

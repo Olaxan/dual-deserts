@@ -8,6 +8,8 @@ using UnityEngine;
 public class OctLoaderTest : MonoBehaviour
 {
 
+	public int tickRate = 16;
+
 	public int voxelSize = 64;
 
 	public int lodVolumeSize = 1024;
@@ -18,31 +20,35 @@ public class OctLoaderTest : MonoBehaviour
 	public Material defaultMaterial;
 
 	TerrainOctree world;
-	public TerrainObject viewer;
 	public List<TerrainObject> worldObjects;
 
+	Dictionary<Vector3Int, Chunk> loadedChunks;
 	Queue<Chunk> unloadedChunks;
 
-	Vector3Int lastPos;
+	int tick = 0;
+	int tickRemeshDelay = 0;
 
 	CSContourGenerator contourGenerator;
 
     void Start()
     {
 		Setup();
-		EvaluateTree();	
+		PrewarmTree();
     }
 
     void Update()
     {
+		if (tick++ >= Mathf.Max(tickRate, tickRemeshDelay))
+		{
+			EvaluateTree();
+		}
     }
 
 	void Setup()
 	{
+		loadedChunks = new Dictionary<Vector3Int, Chunk>();
 		unloadedChunks = new Queue<Chunk>();
 		world = new TerrainOctree(lodVolumeSize, Vector3Int.zero, lodLogicalVolumeSize);
-
-		lastPos = Vector3Int.one * 999;
 
 		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
 		contourGenerator.Setup(voxelSize, 1.0f);
@@ -65,39 +71,67 @@ public class OctLoaderTest : MonoBehaviour
 		unloadedChunks.Enqueue(chunk);
 	}
 
+	void LoadChunks(HashSet<TerrainOctreeNode> nodes)
+	{
+		foreach (var node in nodes)
+		{
+			Chunk newChunk = (unloadedChunks.Count > 0) ? unloadedChunks.Dequeue() : AddChunk();
+			loadedChunks.Add(node.Center, newChunk);
+			newChunk.Refresh(node.Center, node.SideLength);
+
+			contourGenerator.RequestRemesh(newChunk, node.SideLength);
+		}
+	}
+
+	void UnloadChunks(HashSet<TerrainOctreeNode> nodes)
+	{
+		foreach (var node in nodes)
+		{
+			if (!loadedChunks.ContainsKey(node.Center))
+			{
+				Debug.Log($"No chunk {node.Center} / {node.SideLength}!");
+				continue;
+			}
+
+			Chunk chunk = loadedChunks[node.Center];
+			loadedChunks.Remove(node.Center);
+			RecycleChunk(chunk);
+		}
+	}
+
+	void PrewarmTree()
+	{
+		var unloadedNodes = new HashSet<TerrainOctreeNode>();
+		var newNodes = new HashSet<TerrainOctreeNode>();
+
+		world.Evaluate(worldObjects, newNodes, unloadedNodes);
+
+		LoadChunks(newNodes);
+
+		tickRemeshDelay = newNodes.Count;
+
+		gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
+	}
+
 	void EvaluateTree()
 	{
-		Vector3 tp = viewer.terrainObject.transform.position;
+		var unloadedNodes = new HashSet<TerrainOctreeNode>();
+		var newNodes = new HashSet<TerrainOctreeNode>();
 
-		int halfSize = lodLogicalVolumeSize / 2;
-		int halfVolumeSize = lodVolumeSize / 2;
+		world.Evaluate(worldObjects, newNodes, unloadedNodes);
 
-		Vector3Int chunk = new Vector3Int(
-				Mathf.FloorToInt(tp.x / lodLogicalVolumeSize),
-				Mathf.FloorToInt(tp.y / lodLogicalVolumeSize),
-				Mathf.FloorToInt(tp.z / lodLogicalVolumeSize)
-				);
+		UnloadChunks(unloadedNodes);
+		LoadChunks(newNodes);
 
-		Vector3Int gridPos = new Vector3Int(
-			Mathf.RoundToInt(tp.x / halfVolumeSize),
-			Mathf.RoundToInt(tp.y / halfVolumeSize),
-			Mathf.RoundToInt(tp.z / halfVolumeSize)
-				) * halfVolumeSize;
+		tickRemeshDelay = newNodes.Count;
 
-		if (chunk != lastPos)
-		{
-			Debug.Log($"Moved to {chunk}");
-			lastPos = chunk;
-			world.Evaluate(viewer, worldObjects);
-			gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
-		}
+		gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
 	}
 
 	public void UpdateChunks()
     {
-		//foreach (var chunk in loadedChunks.Values)
-		//	contourGenerator.RequestRemesh(chunk, 0);
-		EvaluateTree();	
+		foreach (var chunk in loadedChunks.Values)
+			contourGenerator.RequestRemesh(chunk, 0);
     }
 
 	void OnDrawGizmos()

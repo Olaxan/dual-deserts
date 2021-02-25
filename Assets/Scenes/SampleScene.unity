@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.22267245, g: 0.18656255, b: 0.17512095, a: 1}
+  m_IndirectSpecularColor: {r: 0.22146629, g: 0.18580832, b: 0.17558181, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -182,7 +182,7 @@ GameObject:
   - component: {fileID: 522303913}
   - component: {fileID: 522303912}
   m_Layer: 0
-  m_Name: ViewerSphere
+  m_Name: ImportanceSphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -256,7 +256,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 522303911}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 32, y: 100, z: 32}
+  m_LocalPosition: {x: -512, y: 125, z: 512}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -646,7 +646,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 110
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
       propertyPath: m_LocalPosition.z
@@ -687,8 +687,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 20724644957976244, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
         type: 3}
+      propertyPath: field of view
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 20724644957976244, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+        type: 3}
       propertyPath: far clip plane
-      value: 2048
+      value: 8192
       objectReference: {fileID: 0}
     - target: {fileID: 20724644957976244, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
         type: 3}
@@ -744,6 +749,7 @@ GameObject:
   - component: {fileID: 1062289109}
   - component: {fileID: 1062289108}
   - component: {fileID: 1062289107}
+  - component: {fileID: 1062289111}
   m_Layer: 0
   m_Name: Safe Cube
   m_TagString: Untagged
@@ -819,15 +825,40 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1062289106}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 14.23, z: 0}
+  m_LocalPosition: {x: 0, y: 300, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1062289111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1062289106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a28a938efd3329c93bccde25bf2c66f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1898698336}
 --- !u!4 &1262800637 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4288335847994348, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+    type: 3}
+  m_PrefabInstance: {fileID: 942311515}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1898698331 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1743903104223250, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+    type: 3}
+  m_PrefabInstance: {fileID: 942311515}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1898698336 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
     type: 3}
   m_PrefabInstance: {fileID: 942311515}
   m_PrefabAsset: {fileID: 0}
@@ -1109,15 +1140,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71167be21ca7ac95288ca74aaf65d35e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tickRate: 16
   voxelSize: 64
-  lodVolumeSize: 2048
+  lodVolumeSize: 8192
   lodLogicalVolumeSize: 64
-  drawBounds: 0
+  drawBounds: 1
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
-  viewer:
-    terrainObject: {fileID: 522303911}
+  worldObjects:
+  - terrainObject: {fileID: 1898698331}
     importance: 1
-  worldObjects: []
+  - terrainObject: {fileID: 522303911}
+    importance: 1
 --- !u!4 &2044023712
 Transform:
   m_ObjectHideFlags: 0
@@ -1164,7 +1197,7 @@ MonoBehaviour:
   terrainShader: {fileID: 7200000, guid: 4cd2ee8ca97f778c7b1650154fc7a714, type: 3}
   surfaceLevel: 0
   surfaceScale: 0.0005
-  surfaceMagnitude: 100
+  surfaceMagnitude: 200
   warpScale: 0
   warpMagnitude: 0
   noiseOffset: {x: 0, y: 0, z: 0}
