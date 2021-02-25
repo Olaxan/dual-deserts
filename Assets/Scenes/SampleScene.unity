@@ -831,12 +831,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 942311515}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1898698331 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1743903104223250, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
-    type: 3}
-  m_PrefabInstance: {fileID: 942311515}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1901800598
 GameObject:
   m_ObjectHideFlags: 0
@@ -1115,14 +1109,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71167be21ca7ac95288ca74aaf65d35e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  adjacency: 2
-  lodVolumeSize: 2048
-  lodTresholdMult: 4
-  logicalVolumeSize: 64
   voxelSize: 64
+  lodVolumeSize: 2048
+  lodLogicalVolumeSize: 64
   drawBounds: 0
-  viewer: {fileID: 1898698331}
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
+  viewer:
+    terrainObject: {fileID: 522303911}
+    importance: 1
+  worldObjects: []
 --- !u!4 &2044023712
 Transform:
   m_ObjectHideFlags: 0
