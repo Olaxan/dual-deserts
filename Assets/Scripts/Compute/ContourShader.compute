@@ -155,7 +155,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 #ifdef CENTER_BIAS
 	for (int ai = 0; ai < numAxes; ai++)
 	{
-		float3 n2 = centerBias * isoScale * float3(axes[ai]); // Apply more bias to larger areas
+		float3 n2 = centerBias / isoScale * float3(axes[ai]); // Apply less bias to larger areas
 		float d2 = dot(n2, voxelCenter);
 		dists[pointCount] = d2;
 		norms[pointCount] = n2;
@@ -177,7 +177,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	float3 vertex;
 	if (SolveError(pointCount, A, b, vertex))
 	{
-		vertex = clamp(vertex, float3(id), float3(id + float3(clampRange, clampRange, clampRange) * isoScale));
+		vertex = clamp(vertex, float3(id), float3(id + float3(clampRange, clampRange, clampRange)));
 	}
 	else 
 		vertex = voxelCenter;
