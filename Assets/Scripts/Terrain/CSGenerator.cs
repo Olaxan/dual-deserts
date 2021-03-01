@@ -12,11 +12,17 @@ public class CSGenerator : MonoBehaviour
 
 	public float warpScale;
 	public float warpMagnitude;
+	
+	public float caveScale;
+	public float caveMagnitude;
 
 	public Vector3 noiseOffset = Vector3.zero;
 	public Vector3 noiseScale = Vector3.one;
 
 	public float derivativeStep = 0.0001f;
+
+	[Header("Deformation Settings")]
+	public int chunkOperationLimit = 256;
 
 	Matrix4x4 rot1;
 	Matrix4x4 rot2;
@@ -28,10 +34,17 @@ public class CSGenerator : MonoBehaviour
 	uint _threadSizeY;
 	uint _threadSizeZ;
 
+	ComputeBuffer csgBuffer;
+
     void Awake()
     {
       	Setup();  
     }
+
+	void OnDestroy()
+	{
+		csgBuffer.Release();
+	}
 
 	void Setup()
 	{
@@ -44,6 +57,8 @@ public class CSGenerator : MonoBehaviour
 		rot2 = Matrix4x4.Rotate(Random.rotation);
 		rot3 = Matrix4x4.Rotate(Random.rotation);
 		rot4 = Matrix4x4.Rotate(Random.rotation);
+
+		csgBuffer = new ComputeBuffer(chunkOperationLimit, 24);
 	}
 
 	void SetUniforms(int size, float scale)
@@ -61,6 +76,8 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloat("surfaceMagnitude", surfaceMagnitude);
 		terrainShader.SetFloat("warpScale", warpScale);
 		terrainShader.SetFloat("warpMagnitude", warpMagnitude);
+		terrainShader.SetFloat("caveScale", caveScale);
+		terrainShader.SetFloat("caveMagnitude", caveMagnitude);
 		terrainShader.SetFloat("derivativeStep", derivativeStep);
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
@@ -68,8 +85,6 @@ public class CSGenerator : MonoBehaviour
 
 	public void Generate(ComputeBuffer isoDists, ComputeBuffer isoNormals, Vector3 chunk, int isoSize, float isoScale)
 	{
-
-		//Debug.Log($"Generate {isoSize} voxels at {chunk}, scale = {isoScale}");
 
 		SetUniforms(isoSize, isoScale);
 
@@ -82,6 +97,14 @@ public class CSGenerator : MonoBehaviour
 
 		terrainShader.SetBuffer(_generatorKernel, "isoDists", isoDists);
 		terrainShader.SetBuffer(_generatorKernel, "isoNormals", isoNormals);
+		terrainShader.SetBuffer(_generatorKernel, "operations", csgBuffer);
+
+		CSG[] ops = new CSG[2];
+		ops[0] = new CSG(new Vector3(-15, 250,-20), 10f, OpShape.Sphere, OpType.Union);
+		ops[1] = new CSG(new Vector3(-15, 250,-10), 10f, OpShape.Sphere, OpType.Subtraction);
+
+		terrainShader.SetInt("opCount", 2);
+		csgBuffer.SetData(ops, 0, 0, 2);
 
 		terrainShader.Dispatch(_generatorKernel, ts.x, ts.y, ts.z);
 	}

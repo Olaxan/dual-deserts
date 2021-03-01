@@ -1147,7 +1147,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tickRate: 16
   voxelSize: 64
-  lodVolumeSize: 65536
+  lodVolumeSize: 512
   lodLogicalVolumeSize: 64
   lodFadeOutFrames: 30
   drawBounds: 0
@@ -1206,6 +1206,8 @@ MonoBehaviour:
   surfaceMagnitude: 200
   warpScale: 0.005
   warpMagnitude: 64
+  caveScale: 0.05
+  caveMagnitude: 1
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
   derivativeStep: 0.0001

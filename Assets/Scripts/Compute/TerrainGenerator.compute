@@ -18,12 +18,11 @@ float surfaceLevel;
 float surfaceScale;
 float surfaceMagnitude;
 
+float caveScale;
+float caveMagnitude;
+
 float warpScale;
 float warpMagnitude;
-
-uint lodSize;
-uint lodChunksPerAxis;
-uint lodRes;
 
 float4x4 octaveMat0;
 float4x4 octaveMat1;
@@ -32,10 +31,10 @@ float4x4 octaveMat3;
 
 struct csg
 {
-	int type;
-	int operation;
 	float3 position;
 	float radius;
+	int type;
+	int operation;
 };
 
 RWStructuredBuffer<csg> operations;
@@ -79,8 +78,8 @@ float surface(in float3 p)
 	float3 c2 = rot(wp, octaveMat2);
 	float3 c3 = rot(wp, octaveMat3);
 
-	//float continent = saturate(1 - length(p - float3(0, 0, 0)) / 4096);
-	float continent = usnoise(wp * 0.0005);
+	float continent = 1.0; 
+	//saturate(1 - length(p - float3(0, 0, 0)) / 4096);
 
 	surf += usnoise(wp * surfaceScale * 1.0000) * (surfaceMagnitude * continent);
 	surf += usnoise(wp * surfaceScale * 2.1110) * (surfaceMagnitude * continent) / 2;
@@ -94,6 +93,49 @@ float surface(in float3 p)
 	surf += usnoise(c3 * surfaceScale * 512.13) * surfaceMagnitude / 512;
 
 	return surf;
+
+}
+
+float performOperations(in float3 p, in float density)
+{
+	float res = density;
+
+	float box, sphere, octahedron;
+
+	for (uint i = 0; i < opCount; i++)
+	{
+		csg op = operations[i];
+
+		float3 uRadius = float3(op.radius, op.radius, op.radius);
+
+		box = sdBox(p - op.position, uRadius * (op.type == 0));
+		sphere = sdSphere(p - op.position, op.radius * (op.type == 1));
+		octahedron = sdOctahedronBound(p - op.position, op.radius * (op.type == 2));
+
+		if (op.operation == 0)
+		{
+			//Union - returns min(a, b)
+			res = opUnion(box, res);
+			res = opUnion(sphere, res);
+			res = opUnion(octahedron, res);
+		}
+		else if (op.operation == 1)
+		{
+			//Subtraction - returns max(-a, b)
+			res = opSubtraction(box, res);
+			res = opSubtraction(sphere, res);
+			res = opSubtraction(octahedron, res);
+		}
+		else if (op.operation == 2)
+		{
+			//Difference - returns max(a, b)
+			res = opIntersection(box, res);
+			res = opIntersection(sphere, res);
+			res = opIntersection(octahedron, res);
+		}
+	}
+
+	return res;
 }
 
 float density(in float3 p)
@@ -101,26 +143,15 @@ float density(in float3 p)
 
 	float s = -surface(p);
 
-	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
-	float torus = sdTorus(p, float2(50, 5));
-	float cyl = sdCappedCylinder(p, 25, 25);
+	float caveMult = 1 - saturate(p.y / 256);
+	float cave = snoise(p * caveScale) * caveMagnitude;
+
+	float res = s;
+
 	float pyramid = sdOctahedronExact(p - float3(-512, 100, 512), 256);
-	float faraosGravkammare = sdOctahedronExact(p - float3(-512, 100, 512), 128);
+	res = smin(res, pyramid, 10).x;
 
-	pyramid = opSubtraction(faraosGravkammare, pyramid);
-
-	float a = smin(s, cube, 10).x;
-	float b = smin(a, torus, 10).x;
-	float c = smin(b, cyl, 10).x;
-	float d = smin(c, pyramid, 10).x;
-
-	float res = d;
-	//for (int i = 0; i < opCount; i++)
-	//{
-	//	csg op = operations[i];
-	//	res = op.operation == 0 ? opUnion(res, sdSphere(p + op.position, op.radius))
-	//
-	//}
+	res = performOperations(p, res);
 
 	return res;
 
