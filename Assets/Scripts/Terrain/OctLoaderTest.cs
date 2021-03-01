@@ -156,31 +156,36 @@ public class OctLoaderTest : MonoBehaviour
 	Vector3Int GetCSGVolume(Vector3 pos)
 	{
 		return new Vector3Int(
-				Mathf.RoundToInt(pos.x / csgLogicalVolumeSize),
-				Mathf.RoundToInt(pos.y / csgLogicalVolumeSize),
-				Mathf.RoundToInt(pos.z / csgLogicalVolumeSize));
+				Mathf.FloorToInt(pos.x / csgLogicalVolumeSize),
+				Mathf.FloorToInt(pos.y / csgLogicalVolumeSize),
+				Mathf.FloorToInt(pos.z / csgLogicalVolumeSize));
 	
 	}
 
-	Vector3Int GetLODVolume(Vector3 pos)
+	Vector3Int GetLODVolume(Vector3 pos, int level)
 	{
+		int halfVol = lodLogicalVolumeSize / 2 * (level + 1);
+
 		return new Vector3Int(
-				Mathf.RoundToInt(pos.x / lodLogicalVolumeSize),
-				Mathf.RoundToInt(pos.x / lodLogicalVolumeSize),
-				Mathf.RoundToInt(pos.x / lodLogicalVolumeSize));
+				Mathf.FloorToInt(pos.x / lodLogicalVolumeSize) * lodLogicalVolumeSize + halfVol,
+				Mathf.FloorToInt(pos.y / lodLogicalVolumeSize) * lodLogicalVolumeSize + halfVol,
+				Mathf.FloorToInt(pos.z / lodLogicalVolumeSize) * lodLogicalVolumeSize + halfVol);
 	}
 
 	public void AddOperation(CSG operation)
 	{
 		var opPos = GetCSGVolume(operation.position);
-		var lodPos = GetLODVolume(operation.position);
+		var lodPos = GetLODVolume(operation.position, 0);
 
 		operations.Add(opPos, operation);
+		
+		Debug.Log($"Operation {operation.type}, {operation.shape} at {lodPos} ({opPos})");
 
 		Chunk chunk;
 		if (loadedChunks.TryGetValue(lodPos, out chunk))
+		{
 			contourGenerator.RequestRemesh(chunk, operations[opPos], 0);
-		
+		}
 	}
 
 	public void UpdateChunks()
