@@ -192,9 +192,9 @@ public class OctLoaderTest : MonoBehaviour
     {
 		foreach (var chunk in loadedChunks.Values)
 		{
-			var opPos = GetCSGVolume(chunk.position);
+			var opPos = GetCSGVolume(chunk.WorldPos);
 			var csg = operations[opPos];
-			contourGenerator.RequestRemesh(chunk, csg, 0);
+			contourGenerator.RequestRemesh(chunk, csg, -1);
 		}
     }
 
