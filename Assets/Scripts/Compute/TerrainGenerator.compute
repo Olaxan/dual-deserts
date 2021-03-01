@@ -30,6 +30,16 @@ float4x4 octaveMat1;
 float4x4 octaveMat2;
 float4x4 octaveMat3;
 
+struct csg
+{
+	int type;
+	int operation;
+	float3 position;
+	float radius;
+};
+
+RWStructuredBuffer<csg> operations;
+uint opCount;
 
 float3 rot(float3 coord, float4x4 mat)
 {
@@ -69,15 +79,19 @@ float surface(in float3 p)
 	float3 c2 = rot(wp, octaveMat2);
 	float3 c3 = rot(wp, octaveMat3);
 
-	surf += usnoise(wp * surfaceScale * 1.000 ) * surfaceMagnitude;
-	surf += usnoise(wp * surfaceScale * 4.130 ) * surfaceMagnitude / 3.96;
-	surf += usnoise(wp * surfaceScale * 7.980 ) * surfaceMagnitude / 8.11;
-	surf += usnoise(wp * surfaceScale * 1.960 ) * surfaceMagnitude / 2.13;
-	surf += usnoise(wp * surfaceScale * 16.15 ) * surfaceMagnitude / 15.96;
-	surf += usnoise(c0 * surfaceScale * 64.13 ) * surfaceMagnitude / 63.99;
-	surf += usnoise(c1 * surfaceScale * 32.11 ) * surfaceMagnitude / 31.97;
-	surf += usnoise(c2 * surfaceScale * 128.15) * surfaceMagnitude / 127.95;
-	surf += usnoise(c3 * surfaceScale * 256.13) * surfaceMagnitude / 255.55;
+	//float continent = saturate(1 - length(p - float3(0, 0, 0)) / 4096);
+	float continent = usnoise(wp * 0.0005);
+
+	surf += usnoise(wp * surfaceScale * 1.0000) * (surfaceMagnitude * continent);
+	surf += usnoise(wp * surfaceScale * 2.1110) * (surfaceMagnitude * continent) / 2;
+	surf += usnoise(wp * surfaceScale * 4.1300) * (surfaceMagnitude * continent) / 4;
+	surf += usnoise(wp * surfaceScale * 7.9800) * (surfaceMagnitude * continent) / 8;
+	surf += usnoise(wp * surfaceScale * 16.960) * surfaceMagnitude / 16;
+	surf += usnoise(wp * surfaceScale * 32.150) * surfaceMagnitude / 32;
+	surf += usnoise(c0 * surfaceScale * 64.130) * surfaceMagnitude / 64;
+	surf += usnoise(c1 * surfaceScale * 128.11) * surfaceMagnitude / 128;
+	surf += usnoise(c2 * surfaceScale * 256.15) * surfaceMagnitude / 256;
+	surf += usnoise(c3 * surfaceScale * 512.13) * surfaceMagnitude / 512;
 
 	return surf;
 }
@@ -90,14 +104,25 @@ float density(in float3 p)
 	float cube = sdRoundBox(p, float3(15, 15, 10), 2.0);
 	float torus = sdTorus(p, float2(50, 5));
 	float cyl = sdCappedCylinder(p, 25, 25);
-	float distCube = sdRoundBox(p - float3(-512, 100, 512), float3(100, 100, 100), 2.0);
+	float pyramid = sdOctahedronExact(p - float3(-512, 100, 512), 256);
+	float faraosGravkammare = sdOctahedronExact(p - float3(-512, 100, 512), 128);
+
+	pyramid = opSubtraction(faraosGravkammare, pyramid);
 
 	float a = smin(s, cube, 10).x;
 	float b = smin(a, torus, 10).x;
 	float c = smin(b, cyl, 10).x;
-	float d = smin(c, distCube, 10).x;
+	float d = smin(c, pyramid, 10).x;
 
-	return d;
+	float res = d;
+	//for (int i = 0; i < opCount; i++)
+	//{
+	//	csg op = operations[i];
+	//	res = op.operation == 0 ? opUnion(res, sdSphere(p + op.position, op.radius))
+	//
+	//}
+
+	return res;
 
 }
 

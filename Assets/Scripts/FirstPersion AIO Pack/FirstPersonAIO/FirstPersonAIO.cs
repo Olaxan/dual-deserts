@@ -137,10 +137,12 @@ public class FirstPersonAIO : MonoBehaviour {
         internal float colliderHeight;
         
     }
+
     public CrouchModifiers _crouchModifiers = new CrouchModifiers();
 
     [System.Serializable]
-    public class AdvancedSettings {
+    public class AdvancedSettings 
+    {
         public float gravityMultiplier = 1.0f;
         public PhysicMaterial zeroFrictionMaterial;
         public PhysicMaterial highFrictionMaterial;
@@ -160,6 +162,7 @@ public class FirstPersonAIO : MonoBehaviour {
         public float fovRef;
         
     }
+
     public AdvancedSettings advanced = new AdvancedSettings();
     private CapsuleCollider capsule;
     public bool IsGrounded { get; private set; }
@@ -394,48 +397,65 @@ public class FirstPersonAIO : MonoBehaviour {
 
         #region Movement Settings - FixedUpdate
         
-        if(useStamina){
+        if (useStamina)
+        {
             isSprinting = Input.GetKey(sprintKey) && !isCrouching && staminaInternal > 0 && (Mathf.Abs(fps_Rigidbody.velocity.x) > 0.01f || Mathf.Abs(fps_Rigidbody.velocity.z) > 0.01f);
-            if(isSprinting){
-                staminaInternal -= (staminaDepletionSpeed*2)*Time.deltaTime;
-                if(drawStaminaMeter){
-                    StaminaMeterBG.color = Vector4.MoveTowards(StaminaMeterBG.color, new Vector4(0,0,0,0.5f),0.15f);
-                    StaminaMeter.color = Vector4.MoveTowards(StaminaMeter.color, new Vector4(1,1,1,1),0.15f);
+
+            if (isSprinting)
+            {
+                staminaInternal -= (staminaDepletionSpeed * 2) * Time.deltaTime;
+
+                if (drawStaminaMeter)
+                {
+                    StaminaMeterBG.color = Vector4.MoveTowards(StaminaMeterBG.color, new Vector4(0, 0, 0, 0.5f), 0.15f);
+                    StaminaMeter.color = Vector4.MoveTowards(StaminaMeter.color, new Vector4(1, 1, 1, 1), 0.15f);
                 }
-            }else if((!Input.GetKey(sprintKey)||Mathf.Abs(fps_Rigidbody.velocity.x)< 0.01f || Mathf.Abs(fps_Rigidbody.velocity.z)< 0.01f || isCrouching)&&staminaInternal<staminaLevel){
-                staminaInternal += staminaDepletionSpeed*Time.deltaTime;
             }
-                if(drawStaminaMeter){
-                   if(staminaInternal==staminaLevel){ StaminaMeterBG.color = Vector4.MoveTowards(StaminaMeterBG.color, new Vector4(0,0,0,0),0.15f);
-                    StaminaMeter.color = Vector4.MoveTowards(StaminaMeter.color, new Vector4(1,1,1,0),0.15f);}
-                    float x = Mathf.Clamp(Mathf.SmoothDamp(StaminaMeter.transform.localScale.x,(staminaInternal/staminaLevel)*StaminaMeterBG.transform.localScale.x,ref smoothRef,(1)*Time.deltaTime,1),0.001f, StaminaMeterBG.transform.localScale.x);
-                    StaminaMeter.transform.localScale = new Vector3(x,1,1); 
-                }
-                staminaInternal = Mathf.Clamp(staminaInternal,0,staminaLevel);
-        } else{isSprinting = Input.GetKey(sprintKey);}
+            else if ((!Input.GetKey(sprintKey) || Mathf.Abs(fps_Rigidbody.velocity.x) < 0.01f || Mathf.Abs(fps_Rigidbody.velocity.z) < 0.01f || isCrouching) && staminaInternal < staminaLevel)
+            {
+                staminaInternal += staminaDepletionSpeed * Time.deltaTime;
+            }
+
+            if (drawStaminaMeter)
+            {
+                if (staminaInternal == staminaLevel) {
+                    StaminaMeterBG.color = Vector4.MoveTowards(StaminaMeterBG.color, new Vector4(0, 0, 0, 0), 0.15f);
+                StaminaMeter.color = Vector4.MoveTowards(StaminaMeter.color, new Vector4(1, 1, 1, 0), 0.15f); }
+                float x = Mathf.Clamp(Mathf.SmoothDamp(StaminaMeter.transform.localScale.x, (staminaInternal / staminaLevel) * StaminaMeterBG.transform.localScale.x, ref smoothRef, (1) * Time.deltaTime, 1), 0.001f, StaminaMeterBG.transform.localScale.x);
+                StaminaMeter.transform.localScale = new Vector3(x, 1, 1);
+            }
+            staminaInternal = Mathf.Clamp(staminaInternal, 0, staminaLevel);
+        } 
+        else
+        {
+            isSprinting = Input.GetKey(sprintKey);
+        }
 
         Vector3 MoveDirection = Vector3.zero;
         speed = walkByDefault ? isCrouching ? walkSpeedInternal : (isSprinting ? sprintSpeedInternal : walkSpeedInternal) : (isSprinting ? walkSpeedInternal : sprintSpeedInternal);
   
-
-        if(advanced.maxSlopeAngle>0){
-            if(advanced.isTouchingUpright && advanced.isTouchingWalkable){
-
-                MoveDirection = (transform.forward * inputXY.y * speed + transform.right * inputXY.x * walkSpeedInternal); 
-                if(!didJump){fps_Rigidbody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;}              
+        if (advanced.maxSlopeAngle > 0)
+        {
+            if (advanced.isTouchingUpright && advanced.isTouchingWalkable)
+            {
+                MoveDirection = (transform.forward * inputXY.y * speed + transform.right * inputXY.x * walkSpeedInternal);
+                if (!didJump)
+                {
+                    fps_Rigidbody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation; }
                 }
-                else if(advanced.isTouchingUpright && !advanced.isTouchingWalkable){
+                else if (advanced.isTouchingUpright && !advanced.isTouchingWalkable)
+                {
                     fps_Rigidbody.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
                 }
-                
-                else{
-                    
-                fps_Rigidbody.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
-                MoveDirection = ((transform.forward * inputXY.y * speed + transform.right * inputXY.x * walkSpeedInternal) * (fps_Rigidbody.velocity.y>0.01f ? SlopeCheck() : 0.8f));
+                else
+                {
+                    fps_Rigidbody.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+                    MoveDirection = ((transform.forward * inputXY.y * speed + transform.right * inputXY.x * walkSpeedInternal) * (fps_Rigidbody.velocity.y>0.01f ? SlopeCheck() : 0.8f));
                 }
         }
-        else{
-        MoveDirection = (transform.forward * inputXY.y * speed + transform.right * inputXY.x * walkSpeedInternal);
+        else
+        {
+            MoveDirection = (transform.forward * inputXY.y * speed + transform.right * inputXY.x * walkSpeedInternal);
         }
 
         

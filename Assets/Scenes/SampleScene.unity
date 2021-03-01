@@ -712,6 +712,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114051214696948948, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
         type: 3}
+      propertyPath: useStamina
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114051214696948948, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+        type: 3}
       propertyPath: autoCrosshair
       value: 0
       objectReference: {fileID: 0}
@@ -1142,7 +1147,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tickRate: 16
   voxelSize: 64
-  lodVolumeSize: 8192
+  lodVolumeSize: 65536
   lodLogicalVolumeSize: 64
   lodFadeOutFrames: 30
   drawBounds: 0
@@ -1179,7 +1184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contourGenerator: {fileID: 7200000, guid: ee601805adfb22790b19b404e434a4ad, type: 3}
-  centerBias: 0.25
+  centerBias: 0.5
   maxCornerDistance: 2
   clampRange: 2
   chunksPerFrame: 3
@@ -1199,8 +1204,8 @@ MonoBehaviour:
   surfaceLevel: 0
   surfaceScale: 0.0005
   surfaceMagnitude: 200
-  warpScale: 0
-  warpMagnitude: 0
+  warpScale: 0.005
+  warpMagnitude: 64
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
   derivativeStep: 0.0001

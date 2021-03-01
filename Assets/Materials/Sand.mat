@@ -40,6 +40,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - Texture2DArray_D2A2144A:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - Texture2D_FF0C827C:
         m_Texture: {fileID: 2800000, guid: b9b648bc973dc6348bbd54c54188d9f2, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -49,7 +53,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlbedoTex:
-        m_Texture: {fileID: 2800000, guid: 1a0ee30ecf395f841b8e7d76af58a171, type: 3}
+        m_Texture: {fileID: 2800000, guid: b9b648bc973dc6348bbd54c54188d9f2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlbedoTexSide:
+        m_Texture: {fileID: 2800000, guid: 3d7a272eea5111e489177133cab0d08f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlbedoTexTop:
+        m_Texture: {fileID: 2800000, guid: b05cbd00a170611409955c4560dc1996, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlbedoTexture:
@@ -281,7 +293,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalTex:
-        m_Texture: {fileID: 2800000, guid: 540d5adede7bfd745b170d4c88021e70, type: 3}
+        m_Texture: {fileID: 2800000, guid: ebbd111a615c42746bc8e1b08ba834de, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalTexSide:
+        m_Texture: {fileID: 2800000, guid: 3d7a272eea5111e489177133cab0d08f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalTexTop:
+        m_Texture: {fileID: 2800000, guid: b05cbd00a170611409955c4560dc1996, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalTexture:
@@ -293,7 +313,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionTex:
-        m_Texture: {fileID: 2800000, guid: 4cc5c82aa05fcf1499ce5c00ed8148e6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4adc3ec078410b94db4f3587a1ef683e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
@@ -394,7 +414,7 @@ Material:
     - _AlphaSrcBlend: 1
     - _AmbientPower: 0
     - _Anisotropy: 0
-    - _Blend: 1
+    - _Blend: 5
     - _BlendMode: 0
     - _BlendSharpness: 1
     - _Brightness: 0
@@ -574,7 +594,7 @@ Material:
     - _NormalScale2: 1
     - _NormalScale3: 1
     - _ObjectScaleAffectTile: 0
-    - _OcclusionAmplitude: 1
+    - _OcclusionAmplitude: 2
     - _OcclusionStrength: 1
     - _Opacity: 1
     - _OpacityAsDensity0: 0

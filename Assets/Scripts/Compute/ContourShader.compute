@@ -177,7 +177,8 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	float3 vertex;
 	if (SolveError(pointCount, A, b, vertex))
 	{
-		vertex = clamp(vertex, float3(id), float3(id + float3(clampRange, clampRange, clampRange)));
+		float3 r = float3(clampRange, clampRange, clampRange);
+		vertex = clamp(vertex, float3(id) - r, float3(id) + r);
 	}
 	else 
 		vertex = voxelCenter;
