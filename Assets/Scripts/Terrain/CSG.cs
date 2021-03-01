@@ -1,25 +1,25 @@
 using UnityEngine;
 
-enum OpShape
+public enum OpShape
 {
 	Box = 0,
 	Sphere = 1,
 	Octahedron = 2
 }
 
-enum OpType
+public enum OpType
 {
 	Union = 0,
 	Subtraction = 1,
 	Difference = 2
 }
 
-struct CSG
+public struct CSG
 {
-	Vector3 position;
-	float radius;
-	OpShape shape;
-	OpType type;
+	public Vector3 position;
+	public float radius;
+	public OpShape shape;
+	public OpType type;
 
 	public CSG(Vector3 pos, float r, OpShape shape, OpType type)
 	{

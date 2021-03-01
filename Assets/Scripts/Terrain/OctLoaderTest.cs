@@ -11,14 +11,19 @@ public class OctLoaderTest : MonoBehaviour
 
 	public int tickRate = 16;
 
+	[Header("Voxel Settings")]
 	public int voxelSize = 64;
 
+	[Header("LOD Settings")]
 	public int lodVolumeSize = 1024;
 	public int lodLogicalVolumeSize = 64;
 	public int lodFadeOutFrames = 30;
-
 	public bool drawBounds = false;
 
+	[Header("CSG Settings")]
+	public int csgLogicalVolumeSize = 64;
+
+	[Header("Material Settings")]
 	public Material defaultMaterial;
 
 	TerrainOctree world;
@@ -26,6 +31,8 @@ public class OctLoaderTest : MonoBehaviour
 
 	Dictionary<Vector3Int, Chunk> loadedChunks;
 	Queue<Chunk> unloadedChunks;
+
+	MultiMap<Vector3Int, CSG> operations;
 
 	int tick = 0;
 	int tickRemeshDelay = 0;
@@ -51,9 +58,10 @@ public class OctLoaderTest : MonoBehaviour
 		loadedChunks = new Dictionary<Vector3Int, Chunk>();
 		unloadedChunks = new Queue<Chunk>();
 		world = new TerrainOctree(lodVolumeSize, Vector3Int.zero, lodLogicalVolumeSize);
+		operations = new MultiMap<Vector3Int, CSG>();
 
 		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
-		contourGenerator.Setup(voxelSize, 1.0f);
+		contourGenerator.Setup(voxelSize);
 	}
 
 	Chunk AddChunk()
@@ -92,7 +100,10 @@ public class OctLoaderTest : MonoBehaviour
 			loadedChunks.Add(node.Center, newChunk);
 			newChunk.Refresh(node.Center, node.SideLength);
 
-			contourGenerator.RequestRemesh(newChunk, node.SideLength);
+			var opLoc = GetCSGVolume(node.Center);
+			var ops = operations[opLoc];
+
+			contourGenerator.RequestRemesh(newChunk, ops, node.SideLength);
 		}
 	}
 
@@ -108,8 +119,8 @@ public class OctLoaderTest : MonoBehaviour
 
 			Chunk chunk = loadedChunks[node.Center];
 			loadedChunks.Remove(node.Center);
-			//RecycleChunk(chunk);
-			Timing.RunCoroutine(_FadeAndRecycle(chunk));
+			RecycleChunk(chunk);
+			//Timing.RunCoroutine(_FadeAndRecycle(chunk));
 		}
 	}
 
@@ -142,17 +153,44 @@ public class OctLoaderTest : MonoBehaviour
 		gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
 	}
 
-	int piss = 0;
-	public void FadeChunk()
-    {
-		Chunk c = loadedChunks.ElementAt(piss++).Value;
-		Timing.RunCoroutine(_FadeAndRecycle(c));
-    }
+	Vector3Int GetCSGVolume(Vector3 pos)
+	{
+		return new Vector3Int(
+				Mathf.RoundToInt(pos.x / csgLogicalVolumeSize),
+				Mathf.RoundToInt(pos.y / csgLogicalVolumeSize),
+				Mathf.RoundToInt(pos.z / csgLogicalVolumeSize));
+	
+	}
+
+	Vector3Int GetLODVolume(Vector3 pos)
+	{
+		return new Vector3Int(
+				Mathf.RoundToInt(pos.x / lodLogicalVolumeSize),
+				Mathf.RoundToInt(pos.x / lodLogicalVolumeSize),
+				Mathf.RoundToInt(pos.x / lodLogicalVolumeSize));
+	}
+
+	public void AddOperation(CSG operation)
+	{
+		var opPos = GetCSGVolume(operation.position);
+		var lodPos = GetLODVolume(operation.position);
+
+		operations.Add(opPos, operation);
+
+		Chunk chunk;
+		if (loadedChunks.TryGetValue(lodPos, out chunk))
+			contourGenerator.RequestRemesh(chunk, operations[opPos], 0);
+		
+	}
 
 	public void UpdateChunks()
     {
 		foreach (var chunk in loadedChunks.Values)
-			contourGenerator.RequestRemesh(chunk, 0);
+		{
+			var opPos = GetCSGVolume(chunk.position);
+			var csg = operations[opPos];
+			contourGenerator.RequestRemesh(chunk, csg, 0);
+		}
     }
 
 	void OnDrawGizmos()

@@ -17,7 +17,6 @@ public class CSContourGenerator : MonoBehaviour
 	CSGenerator terrainGenerator;
 
 	int size;
-	float scale;
 
 	ComputeBuffer isoDistBuffer;
 	ComputeBuffer isoNormalBuffer;
@@ -30,7 +29,7 @@ public class CSContourGenerator : MonoBehaviour
 	ComputeBuffer quadCountBuffer;
 	ComputeBuffer vertexCountBuffer;
 
-	PriorityQueue<Chunk, int> buildQueue;
+	PriorityQueue<(Chunk, List<CSG>), int> buildQueue;
 
 	int _vertexKernel;
 	int _triangleKernel;
@@ -45,9 +44,12 @@ public class CSContourGenerator : MonoBehaviour
 	{
 		for (int i = 0; i < Mathf.Min(chunksPerFrame, buildQueue.Count); i++)
 		{
-			Chunk chunk = buildQueue.Dequeue();
+			var pair  = buildQueue.Dequeue();
+			Chunk chunk = pair.Item1;
+			List<CSG> operations = pair.Item2;
+
 			chunk.contour.Clear();
-			GenerateChunk(chunk);
+			GenerateChunk(chunk, operations);
 			chunk.gameObject.SetActive(true);
 			chunk.Opacity = 1f;
 		}
@@ -58,7 +60,7 @@ public class CSContourGenerator : MonoBehaviour
 		ReleaseBuffers();
 	}
 
-	public void Setup(int isoSize, float isoScale)
+	public void Setup(int isoSize)
 	{
 		terrainGenerator = gameObject.GetComponent<CSGenerator>();
 		if (terrainGenerator == null)
@@ -70,22 +72,21 @@ public class CSContourGenerator : MonoBehaviour
 		contourGenerator.GetKernelThreadGroupSizes(_vertexKernel, 
 				out _threadSizeX, out _threadSizeY, out _threadSizeZ);
 
-		buildQueue = new PriorityQueue<Chunk, int>();
+		buildQueue = new PriorityQueue<(Chunk, List<CSG>), int>();
 
 		size = isoSize;
-		scale = isoScale;
 
 		SetupBuffers();
-
+		terrainGenerator.SetBuffers(isoDistBuffer, isoNormalBuffer);
 	}
 
-	public void RequestRemesh(Chunk chunk, int priority)
+	public void RequestRemesh(Chunk chunk, List<CSG> operations, int priority)
 	{
 		chunk.gameObject.SetActive(false);
-		buildQueue.Enqueue(chunk, priority);
+		buildQueue.Enqueue((chunk, operations), priority);
 	}
 
-	void GenerateChunk(Chunk chunk)
+	void GenerateChunk(Chunk chunk, List<CSG> operations)
 	{
 
 		if (bufferSize != size)
@@ -101,7 +102,8 @@ public class CSContourGenerator : MonoBehaviour
 				Mathf.CeilToInt(size / _threadSizeY), 
 				Mathf.CeilToInt(size / _threadSizeZ));
 
-		terrainGenerator.Generate(isoDistBuffer, isoNormalBuffer, chunk.WorldPos, size, chunkScale);
+		terrainGenerator.SetOperations(operations);
+		terrainGenerator.Generate(chunk.WorldPos, size, chunkScale);
 
 		contourGenerator.SetInt("isoSize", size); 
 		contourGenerator.SetFloat("isoScale", chunkScale);

@@ -48,7 +48,7 @@ public class TerrainLoader : MonoBehaviour
 		loadedChunks = new Dictionary<Vector3Int, Chunk>();
 
 		contourGenerator = gameObject.GetComponent<CSContourGenerator>();
-		contourGenerator.Setup(volumeSize, volumeScale);
+		contourGenerator.Setup(volumeSize);
 	}
 
 	Chunk AddChunk()
@@ -128,7 +128,7 @@ public class TerrainLoader : MonoBehaviour
 				//newChunk.Refresh(offsetPos, chunkOffset);
 				loadedChunks.Add(offsetPos, newChunk);
 				chunks.Add(newChunk);
-				contourGenerator.RequestRemesh(newChunk, posSqrDist);
+				//contourGenerator.RequestRemesh(newChunk, posSqrDist);
 			}
 		}
 	}
@@ -146,7 +146,7 @@ public class TerrainLoader : MonoBehaviour
 
 		foreach (Chunk chunk in chunks)
 		{
-			contourGenerator.RequestRemesh(chunk, (chunk.position - viewChunk).sqrMagnitude);
+			//contourGenerator.RequestRemesh(chunk, (chunk.position - viewChunk).sqrMagnitude);
 		}
 	}
 }
