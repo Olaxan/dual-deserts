@@ -221,12 +221,13 @@ public class OctLoaderTest : MonoBehaviour
 
 	Vector3Int GetLODVolume(Vector3 pos, int level)
 	{
-		int halfVol = lodLogicalVolumeSize / 2 * (level + 1);
+		int lodLevelSize = lodLogicalVolumeSize * (level + 1);
+		int halfSize = lodLevelSize / 2;
 
 		return new Vector3Int(
-				Mathf.FloorToInt(pos.x / lodLogicalVolumeSize) * lodLogicalVolumeSize + halfVol,
-				Mathf.FloorToInt(pos.y / lodLogicalVolumeSize) * lodLogicalVolumeSize + halfVol,
-				Mathf.FloorToInt(pos.z / lodLogicalVolumeSize) * lodLogicalVolumeSize + halfVol);
+				Mathf.FloorToInt(pos.x / lodLevelSize) * lodLevelSize + halfSize,
+				Mathf.FloorToInt(pos.y / lodLevelSize) * lodLevelSize + halfSize,
+				Mathf.FloorToInt(pos.z / lodLevelSize) * lodLevelSize + halfSize);
 	}
 
 	public void AddOperation(CSG operation)
@@ -234,13 +235,13 @@ public class OctLoaderTest : MonoBehaviour
 		
 		int lodLevel = Mathf.CeilToInt(operation.radius / csgLodRadius);
 
-		//for (int i = 0; i < lodLevel; i++)
-		//{
-			var pos = GetLODVolume(operation.position, 0);
+		Debug.Log($"Operation {operation.type}, {operation.shape} at {operation.position} (lodLevel = {lodLevel})");
 
-		Debug.Log($"Operation {operation.type}, {operation.shape} at {pos} (LOD {lodLevel})");
+		for (int i = 0; i < lodLevel; i++)
+		{
+			var pos = GetLODVolume(operation.position, i);
 
-		operations.Add(pos, operation);
+			operations.Add(pos, operation);
 
 			Chunk chunk;
 			if (loadedChunks.TryGetValue(pos, out chunk))
@@ -258,7 +259,7 @@ public class OctLoaderTest : MonoBehaviour
 						contourGenerator.RequestRemesh(chunk, operations[p], 0);
 				}
 			}
-		//}
+		}
 	}
 
 	public void UpdateChunks()
