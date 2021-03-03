@@ -105,7 +105,7 @@ public class OctLoaderTest : MonoBehaviour
 
 			var ops = operations[node.Center];
 
-			contourGenerator.RequestRemesh(newChunk, ops, node.SideLength);
+			contourGenerator.RemeshAsync(newChunk, ops, node.SideLength);
 		}
 	}
 
@@ -155,8 +155,10 @@ public class OctLoaderTest : MonoBehaviour
 		gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
 	}
 
-	List<Vector3Int> GetNeighbourPositions(Vector3Int p0, int size)
+	List<Vector3Int> GetNeighbourPositions(Vector3Int p0, int lodLevel)
 	{
+		int size = (lodLevel + 1) * lodLogicalVolumeSize;
+
 		var positions = new List<Vector3Int>(26);
 
 		for (int i = 0; i < 27; i++)
@@ -186,7 +188,7 @@ public class OctLoaderTest : MonoBehaviour
 		Chunk c;
 		List<Chunk> chunks = new List<Chunk>();
 
-		foreach (var pos in GetNeighbourPositions(chunk.GridPos, (int)chunk.Size))
+		foreach (var pos in GetNeighbourPositions(chunk.GridPos, Mathf.RoundToInt(chunk.Size / lodLogicalVolumeSize) - 1))
 		{
 			if (loadedChunks.TryGetValue(pos, out c))
 				chunks.Add(c);
@@ -195,8 +197,11 @@ public class OctLoaderTest : MonoBehaviour
 		return chunks;
 	}
 
-	float CheckCSGRadius(CSG operation, Vector3Int pos, int size)
+	float CheckCSGRadius(CSG operation, Vector3Int pos, int lodLevel)
 	{
+
+		int size = (lodLevel + 1) * lodLogicalVolumeSize;
+
 		Vector3 s = Vector3.one * size / 2f; // /2?
 		Vector3 pc = operation.position - pos;
 		pc.x = Mathf.Abs(pc.x);
@@ -245,18 +250,18 @@ public class OctLoaderTest : MonoBehaviour
 
 			Chunk chunk;
 			if (loadedChunks.TryGetValue(pos, out chunk))
-				contourGenerator.RequestRemesh(chunk, operations[pos], -1);
+				contourGenerator.Remesh(chunk, operations[pos]);
 
-			foreach (var p in GetNeighbourPositions(pos, lodLogicalVolumeSize))
+			foreach (var p in GetNeighbourPositions(pos, i))
 			{
-				if (CheckCSGRadius(operation, p, lodLogicalVolumeSize) < operation.radius)
+				if (CheckCSGRadius(operation, p, i) < operation.radius)
 				{
 					operations.Add(p, operation);
 
 					Debug.Log($"Operation overflow: {p}, c = {operations[p].Count}");
 
 					if (loadedChunks.TryGetValue(p, out chunk))
-						contourGenerator.RequestRemesh(chunk, operations[p], 0);
+						contourGenerator.Remesh(chunk, operations[p]);
 				}
 			}
 		}
@@ -267,7 +272,7 @@ public class OctLoaderTest : MonoBehaviour
 		foreach (var chunk in loadedChunks.Values)
 		{
 			var csg = operations[chunk.GridPos];
-			contourGenerator.RequestRemesh(chunk, csg, -1);
+			contourGenerator.RemeshAsync(chunk, csg, (int)chunk.Size);
 		}
     }
 

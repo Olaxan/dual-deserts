@@ -49,7 +49,7 @@ public class CSContourGenerator : MonoBehaviour
 			List<CSG> operations = pair.Item2;
 
 			chunk.contour.Clear();
-			GenerateChunk(chunk, operations);
+			Remesh(chunk, operations);
 			chunk.gameObject.SetActive(true);
 			chunk.Opacity = 1f;
 		}
@@ -79,13 +79,13 @@ public class CSContourGenerator : MonoBehaviour
 		SetupBuffers();
 	}
 
-	public void RequestRemesh(Chunk chunk, List<CSG> operations, int priority)
+	public void RemeshAsync(Chunk chunk, List<CSG> operations, int priority)
 	{
 		chunk.gameObject.SetActive(false);
 		buildQueue.Enqueue((chunk, operations), priority);
 	}
 
-	void GenerateChunk(Chunk chunk, List<CSG> operations)
+	public void Remesh(Chunk chunk, List<CSG> operations)
 	{
 
 		if (bufferSize != size)
