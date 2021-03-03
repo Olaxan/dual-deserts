@@ -183,7 +183,7 @@ void CSMakeVertices(uint3 id : SV_DispatchThreadID)
 	else 
 		vertex = voxelCenter;
 
-	vertex -= float3(0.5, 0.5, 0.5);
+	//vertex -= float3(0.5, 0.5, 0.5);
 	vertex *= isoScale;
 
 	int idx = vertices.IncrementCounter();
