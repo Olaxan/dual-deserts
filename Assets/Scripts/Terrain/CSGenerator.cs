@@ -23,7 +23,7 @@ public class CSGenerator : MonoBehaviour
 	public float derivativeStep = 0.0001f;
 
 	[Header("Deformation Settings")]
-	public int chunkOperationLimit = 256;
+	public int csgOperationLimit = 256;
 
 	Matrix4x4 rot1;
 	Matrix4x4 rot2;
@@ -59,7 +59,7 @@ public class CSGenerator : MonoBehaviour
 		rot3 = Matrix4x4.Rotate(Random.rotation);
 		rot4 = Matrix4x4.Rotate(Random.rotation);
 
-		csgBuffer = new ComputeBuffer(chunkOperationLimit, 24);
+		csgBuffer = new ComputeBuffer(csgOperationLimit, 24);
 		terrainShader.SetBuffer(_generatorKernel, "operations", csgBuffer);
 	}
 
@@ -90,8 +90,10 @@ public class CSGenerator : MonoBehaviour
 
 	public void SetOperations(List<CSG> operations)
 	{
-		csgBuffer.SetData(operations, 0, 0, operations.Count);
-		terrainShader.SetInt("opCount", operations.Count);
+		int c = Mathf.Min(csgOperationLimit, operations.Count);
+
+		csgBuffer.SetData(operations, 0, 0, c);
+		terrainShader.SetInt("opCount", c);
 	}
 
 	public void Generate(Vector3 chunk, int isoSize, float isoScale)

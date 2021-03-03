@@ -19,7 +19,9 @@ public class OctLoaderTest : MonoBehaviour
 	public int lodLogicalVolumeSize = 64;
 	public int lodFadeOutFrames = 30;
 	public float lodOverlap = 1f;
-	public bool drawBounds = false;
+	public bool lodFade = true;
+	public bool lodDrawBounds = false;
+	
 
 	[Header("CSG Settings")]
 	public int csgLogicalVolumeSize = 64;
@@ -117,8 +119,11 @@ public class OctLoaderTest : MonoBehaviour
 			if (loadedChunks.TryGetValue(node.Center, out chunk))
 			{
 				loadedChunks.Remove(node.Center);
-				RecycleChunk(chunk);
-				//Timing.RunCoroutine(_FadeAndRecycle(chunk));
+
+				if (lodFade)
+					Timing.RunCoroutine(_FadeAndRecycle(chunk));
+				else
+					RecycleChunk(chunk);
 			}
 			else
 				Debug.Log($"No chunk {node.Center} / {node.SideLength}!");
@@ -238,6 +243,7 @@ public class OctLoaderTest : MonoBehaviour
 	public void AddOperation(CSG operation)
 	{
 		
+		// This should probably be calculated using a quadratic equation
 		int lodLevel = Mathf.CeilToInt(operation.radius / csgLodRadius);
 
 		Debug.Log($"Operation {operation.type}, {operation.shape} at {operation.position} (lodLevel = {lodLevel})");
@@ -278,7 +284,7 @@ public class OctLoaderTest : MonoBehaviour
 
 	void OnDrawGizmos()
 	{
-		if (Application.isPlaying && drawBounds)
+		if (Application.isPlaying && lodDrawBounds)
 		{
 			world.DrawAllBounds();
 		}
