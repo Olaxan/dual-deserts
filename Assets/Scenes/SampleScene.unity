@@ -875,9 +875,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loader: {fileID: 2044023711}
   rayLength: 100
-  radius: 10
-  shape: 0
-  type: 0
+  radius: 5
+  shape: 1
+  type: 1
 --- !u!4 &1898698336 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4448068258976056, guid: 2e62f5703e5f8d2488a5e1bc8433be41,

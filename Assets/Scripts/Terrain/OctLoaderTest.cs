@@ -155,6 +155,70 @@ public class OctLoaderTest : MonoBehaviour
 		gameObject.name = $"OctLoader {transform.childCount} children ({unloadedChunks.Count} queued)";
 	}
 
+	List<Vector3Int> GetNeighbourPositions(Vector3Int p0, int size)
+	{
+		var positions = new List<Vector3Int>(26);
+
+		for (int i = 0; i < 27; i++)
+		{
+			int x = i / 9;
+			int w = i % 9;
+			int y = w / 3;
+			int z = w % 3;
+
+			Vector3Int p = new Vector3Int(
+					p0.x + size * (x - 1),
+					p0.y + size * (y - 1),
+					p0.z + size * (z - 1));
+
+			if (p != p0)
+				positions.Add(p);
+		}
+
+		return positions;
+	}
+	
+	List<Chunk> GetNeighbours(Chunk chunk)
+	{
+		Vector3Int p0 = chunk.GridPos;
+		int s = (int)chunk.Size;
+
+		Chunk c;
+		List<Chunk> chunks = new List<Chunk>();
+
+		foreach (var pos in GetNeighbourPositions(chunk.GridPos, (int)chunk.Size))
+		{
+			if (loadedChunks.TryGetValue(pos, out c))
+				chunks.Add(c);
+		}
+
+		return chunks;
+	}
+
+	float CheckCSGRadius(CSG operation, Vector3Int pos, int size)
+	{
+		Vector3 s = Vector3.one * size / 2f; // /2?
+		Vector3 pc = operation.position - pos;
+		pc.x = Mathf.Abs(pc.x);
+		pc.y = Mathf.Abs(pc.y);
+		pc.z = Mathf.Abs(pc.z);
+		pc -= s;
+
+		float m = Mathf.Max(pc.x, pc.y, pc.z);
+
+		return m;
+	}
+
+	float CheckCSGRadius(CSG operation, Chunk chunk)
+	{
+		return CheckCSGRadius(operation, chunk.GridPos, (int)chunk.Size);
+	}
+
+	bool ExceedsChunk(CSG operation, Chunk chunk)
+	{
+		return operation.radius > Mathf.Abs(CheckCSGRadius(operation, chunk));
+	}
+
 	Vector3Int GetCSGVolume(Vector3 pos)
 	{
 		return new Vector3Int(
@@ -180,14 +244,24 @@ public class OctLoaderTest : MonoBehaviour
 		var lodPos = GetLODVolume(operation.position, 0);
 
 		operations.Add(opPos, operation);
-		
-		Debug.Log($"Operation {operation.type}, {operation.shape} at {lodPos} ({opPos})");
 
 		Chunk chunk;
 		if (loadedChunks.TryGetValue(lodPos, out chunk))
+			contourGenerator.RequestRemesh(chunk, operations[opPos], -1);
+		
+		Debug.Log($"Operation {operation.type}, {operation.shape} at {lodPos} ({opPos})");
+
+		foreach (var p in GetNeighbourPositions(lodPos, lodLogicalVolumeSize))
 		{
-			contourGenerator.RequestRemesh(chunk, operations[opPos], 0);
+			if (CheckCSGRadius(operation, p, lodLogicalVolumeSize) < operation.radius)
+			{
+				operations.Add(p, operation);
+
+				if (loadedChunks.TryGetValue(p, out chunk))
+					contourGenerator.RequestRemesh(chunk, operations[p], -1);
+			}
 		}
+
 	}
 
 	public void UpdateChunks()

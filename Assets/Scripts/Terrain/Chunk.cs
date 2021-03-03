@@ -7,9 +7,9 @@ public class Chunk : MonoBehaviour
 
 	public Mesh contour;
 	public Material defaultMaterial;
-	public Vector3Int position;
 
 	public Vector3 WorldPos { get => transform.position; }
+	public Vector3Int GridPos { get; private set; }
 	public float Size { get; private set; }
 
 	public float Opacity 
@@ -55,11 +55,12 @@ public class Chunk : MonoBehaviour
 
 	}
 
-	public void Refresh(Vector3 worldPos, float size)
+	public void Refresh(Vector3Int gridPos, float size)
 	{
-		gameObject.name = $"{worldPos.ToString()} / {size}";
-		gameObject.transform.position = worldPos - Vector3.one * size / 2.0f;
+		gameObject.name = $"{gridPos.ToString()} / {size}";
+		gameObject.transform.position = gridPos - Vector3.one * size / 2.0f;
 		Size = size;
+		GridPos = gridPos;
 	}
 
 	public void UpdateCollider()

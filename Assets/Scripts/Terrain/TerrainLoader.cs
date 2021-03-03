@@ -88,10 +88,10 @@ public class TerrainLoader : MonoBehaviour
 		{
 			Chunk chunk = chunks[i];
 
-			Vector3Int originPos = chunk.position - viewChunk;
+			Vector3Int originPos = chunk.GridPos - viewChunk;
 			if (originPos.sqrMagnitude > sqrDist)
 			{
-				loadedChunks.Remove(chunk.position);
+				loadedChunks.Remove(chunk.GridPos);
 				unloadedChunks.Enqueue(chunk);
 				chunks.RemoveAt(i);
 			}
