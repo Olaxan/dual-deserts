@@ -23,6 +23,7 @@ public class OctLoaderTest : MonoBehaviour
 
 	[Header("CSG Settings")]
 	public int csgLogicalVolumeSize = 64;
+	public float csgLodRadius = 5f;
 
 	[Header("Material Settings")]
 	public Material defaultMaterial;
@@ -102,8 +103,7 @@ public class OctLoaderTest : MonoBehaviour
 			float overlap = lodOverlap * (node.SideLength / lodLogicalVolumeSize - 1);
 			newChunk.Refresh(node.Center, node.SideLength + overlap);
 
-			var opLoc = GetCSGVolume(node.Center);
-			var ops = operations[opLoc];
+			var ops = operations[node.Center];
 
 			contourGenerator.RequestRemesh(newChunk, ops, node.SideLength);
 		}
@@ -219,15 +219,6 @@ public class OctLoaderTest : MonoBehaviour
 		return operation.radius > Mathf.Abs(CheckCSGRadius(operation, chunk));
 	}
 
-	Vector3Int GetCSGVolume(Vector3 pos)
-	{
-		return new Vector3Int(
-				Mathf.FloorToInt(pos.x / csgLogicalVolumeSize),
-				Mathf.FloorToInt(pos.y / csgLogicalVolumeSize),
-				Mathf.FloorToInt(pos.z / csgLogicalVolumeSize));
-	
-	}
-
 	Vector3Int GetLODVolume(Vector3 pos, int level)
 	{
 		int halfVol = lodLogicalVolumeSize / 2 * (level + 1);
@@ -240,36 +231,41 @@ public class OctLoaderTest : MonoBehaviour
 
 	public void AddOperation(CSG operation)
 	{
-		var opPos = GetCSGVolume(operation.position);
-		var lodPos = GetLODVolume(operation.position, 0);
-
-		operations.Add(opPos, operation);
-
-		Chunk chunk;
-		if (loadedChunks.TryGetValue(lodPos, out chunk))
-			contourGenerator.RequestRemesh(chunk, operations[opPos], -1);
 		
-		Debug.Log($"Operation {operation.type}, {operation.shape} at {lodPos} ({opPos})");
+		int lodLevel = Mathf.CeilToInt(operation.radius / csgLodRadius);
 
-		foreach (var p in GetNeighbourPositions(lodPos, lodLogicalVolumeSize))
-		{
-			if (CheckCSGRadius(operation, p, lodLogicalVolumeSize) < operation.radius)
+		//for (int i = 0; i < lodLevel; i++)
+		//{
+			var pos = GetLODVolume(operation.position, 0);
+
+		Debug.Log($"Operation {operation.type}, {operation.shape} at {pos} (LOD {lodLevel})");
+
+		operations.Add(pos, operation);
+
+			Chunk chunk;
+			if (loadedChunks.TryGetValue(pos, out chunk))
+				contourGenerator.RequestRemesh(chunk, operations[pos], -1);
+
+			foreach (var p in GetNeighbourPositions(pos, lodLogicalVolumeSize))
 			{
-				operations.Add(p, operation);
+				if (CheckCSGRadius(operation, p, lodLogicalVolumeSize) < operation.radius)
+				{
+					operations.Add(p, operation);
 
-				if (loadedChunks.TryGetValue(p, out chunk))
-					contourGenerator.RequestRemesh(chunk, operations[p], -1);
+					Debug.Log($"Operation overflow: {p}, c = {operations[p].Count}");
+
+					if (loadedChunks.TryGetValue(p, out chunk))
+						contourGenerator.RequestRemesh(chunk, operations[p], 0);
+				}
 			}
-		}
-
+		//}
 	}
 
 	public void UpdateChunks()
     {
 		foreach (var chunk in loadedChunks.Values)
 		{
-			var opPos = GetCSGVolume(chunk.WorldPos);
-			var csg = operations[opPos];
+			var csg = operations[chunk.GridPos];
 			contourGenerator.RequestRemesh(chunk, csg, -1);
 		}
     }
