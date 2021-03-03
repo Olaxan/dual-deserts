@@ -77,7 +77,6 @@ public class CSContourGenerator : MonoBehaviour
 		size = isoSize;
 
 		SetupBuffers();
-		terrainGenerator.SetBuffers(isoDistBuffer, isoNormalBuffer);
 	}
 
 	public void RequestRemesh(Chunk chunk, List<CSG> operations, int priority)
@@ -103,6 +102,7 @@ public class CSContourGenerator : MonoBehaviour
 				Mathf.CeilToInt(size / _threadSizeZ));
 
 		terrainGenerator.SetOperations(operations);
+		terrainGenerator.SetBuffers(isoDistBuffer, isoNormalBuffer);
 		terrainGenerator.Generate(chunk.WorldPos, size, chunkScale);
 
 		contourGenerator.SetInt("isoSize", size); 

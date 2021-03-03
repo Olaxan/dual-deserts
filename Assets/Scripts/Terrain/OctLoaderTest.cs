@@ -18,6 +18,7 @@ public class OctLoaderTest : MonoBehaviour
 	public int lodVolumeSize = 1024;
 	public int lodLogicalVolumeSize = 64;
 	public int lodFadeOutFrames = 30;
+	public float lodOverlap = 1f;
 	public bool drawBounds = false;
 
 	[Header("CSG Settings")]
@@ -98,7 +99,8 @@ public class OctLoaderTest : MonoBehaviour
 		{
 			Chunk newChunk = (unloadedChunks.Count > 0) ? unloadedChunks.Dequeue() : AddChunk();
 			loadedChunks.Add(node.Center, newChunk);
-			newChunk.Refresh(node.Center, node.SideLength);
+			float overlap = lodOverlap * (node.SideLength / lodLogicalVolumeSize - 1);
+			newChunk.Refresh(node.Center, node.SideLength + overlap);
 
 			var opLoc = GetCSGVolume(node.Center);
 			var ops = operations[opLoc];
@@ -109,18 +111,18 @@ public class OctLoaderTest : MonoBehaviour
 
 	void UnloadChunks(HashSet<TerrainOctreeNode> nodes)
 	{
+		Chunk chunk;
 		foreach (var node in nodes)
 		{
-			if (!loadedChunks.ContainsKey(node.Center))
+			if (loadedChunks.TryGetValue(node.Center, out chunk))
 			{
-				Debug.Log($"No chunk {node.Center} / {node.SideLength}!");
-				continue;
+				loadedChunks.Remove(node.Center);
+				RecycleChunk(chunk);
+				//Timing.RunCoroutine(_FadeAndRecycle(chunk));
 			}
+			else
+				Debug.Log($"No chunk {node.Center} / {node.SideLength}!");
 
-			Chunk chunk = loadedChunks[node.Center];
-			loadedChunks.Remove(node.Center);
-			RecycleChunk(chunk);
-			//Timing.RunCoroutine(_FadeAndRecycle(chunk));
 		}
 	}
 

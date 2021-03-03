@@ -1167,6 +1167,7 @@ MonoBehaviour:
   lodVolumeSize: 8192
   lodLogicalVolumeSize: 64
   lodFadeOutFrames: 30
+  lodOverlap: 2
   drawBounds: 0
   csgLogicalVolumeSize: 64
   defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
