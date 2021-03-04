@@ -25,7 +25,7 @@ public class OctLoaderTest : MonoBehaviour
 
 	[Header("CSG Settings")]
 	public int csgLogicalVolumeSize = 64;
-	public float csgLodRadius = 5f;
+	public float csgLodRadiusMult = 5f;
 
 	[Header("Material Settings")]
 	public Material defaultMaterial;
@@ -243,8 +243,8 @@ public class OctLoaderTest : MonoBehaviour
 	public void AddOperation(CSG operation)
 	{
 		
-		// This should probably be calculated using a quadratic equation
-		int lodLevel = Mathf.CeilToInt(operation.radius / csgLodRadius);
+		// The visibility of an operation is determined by max(1, log2(rad * mult))
+		int lodLevel = Mathf.Max(1, Mathf.RoundToInt(Mathf.Log(operation.radius * csgLodRadiusMult, 2)));
 
 		Debug.Log($"Operation {operation.type}, {operation.shape} at {operation.position} (lodLevel = {lodLevel})");
 
