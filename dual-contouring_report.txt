@@ -1,0 +1,53 @@
+Volumetric Terrain with Dual Contouring
+and Octree Based LOD
+
+Fredrik Lind
+2021-03-XX
+
+# ABSTRACT
+
+# INTRODUCTION
+
+# THEORY
+Terrain in video games is typically represented using heightmaps,
+where elevation is stored as a floating point number between 0 and 1.
+While this approach is fine for most applications, it has several limitations.
+As it is only possible to store one single elevation value for any given point on the terrain, 
+   you cannot represent caves, overhangs, or other landscape features where the terrain
+   folds in on itself.
+To some extent you can reproduce these features by masking out holes in the terrain and hand-placing
+pre-made geometry to match. This approach requires extra work by both artists and level designers.
+It is also unfeasable to use for procedurally generated terrain.
+
+## Volume Data
+An alternative solution is to use volumetric terrain.
+The terrain surface, in this context, is typically referred to as the "isosurface."
+
+In volumetric terrain, the elevation data is replaced by three-dimensional volume data.
+This data can look different depending on the desired look and feel of the terrain.
+For simple, blocky terrain, it is sufficient to store a boolean value for each "voxel" in the terrain,
+	describing whether or not this block is filled.
+
+Another common approach is to store density values. 
+In essence, these values describe by how much any given voxel is filled.
+As this data is more precise, it is possible to interpolate between voxels, and produce smooth terrain.
+
+The Dual Contouring algorithm, used in this paper, relies on Hermite Data.
+This data describes the points where the isosurface intersects any given voxel,
+	 as well as their normal vectors (away from the surface).
+
+## Triangulation
+In order to render volume data, there are a few methods to choose from.
+Raytracing or raymarching will allow for rendering the data directly,
+	without first creating a mesh.
+However, it is not very performant on a large scale, and comes with a few tradeoffs.
+As graphics processors are highly optimized to render triangles, 
+   creating a polygonized approximation of the volume is probably a better option.
+Depending on ...
+
+
+# RESULTS
+
+# DISCUSSION
+
+# REFERENCES
