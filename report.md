@@ -84,6 +84,33 @@ The advantage of this is that SDF:s are well-researched and has many interesting
 Calculating the normals can be done in two ways:
 Either by deriving the generating functions in advance, or analytically by sampling the generator multiple times with small steps in each direction, calculating the normal based on the change in inclination. As the generator function easily grows to be complex, the latter can become fairly costly in the long run.
 
+## GPU Acceleration
+
+Graphics processors are actually very well suited for dealing with 3D volumes, as they closely resemble 3D textures.
+A lot of the logic and optimizations that GPU:s provide can therefore be used to speed up both field generation and meshing.
+
+There exists a specialized type of GPU shader called a "Compute Shader," used to perform complex calculation in parallel on the GPU.
+A compute shader may contain one or more kernels, which are essentially program entry points.
+Each kernel can specify how many threads should be assigned to a work group.
+A multiple of 32 makes sense here, 64 being a good default -- as this corresponds well with the size of a warp/wavefront on AMD and NVidia GPU:s.
+The group size is divided into three components: x, y, and z.
+
+When dispatching the shader kernel, a certain number of work groups in each dimension are requested.
+The product of the kernel group size and the requested number of groups will determine how many times the kernel is run.
+The kernel provides an ID, represented as a 3D integer vector, which can be used to associate a kernel invokation with a voxel in the volume.
+
+Flattening this ID will also allow for its use as an index in a GPU buffer, which can be used to pass data between dispatches.
+
+For a volume of 64³ you might, for example, set up a kernel with a group size of (8, 8, 1), 
+	which is then dispatched with a requested group count of (8, 8, 64), 
+	resulting in the kernel being invoked once per voxel in the volume.
+
+## Level of Detail
+
+When dealing with terrain, it is desireable for the player to be able to see very far into the distance.
+### Chunks
+
+
 
 
 # RESULTS
