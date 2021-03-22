@@ -83,7 +83,7 @@ The advantage of this is that SDF:s are well-researched and has many interesting
 "Adding" a shape to another when using SDF:s is for example simply a matter of taking the minimum value of the two fields for any given voxel.
 
 Calculating the normals can be done in two ways:
-Either by deriving the generating functions in advance, or analytically by sampling the generator multiple times with small steps in each direction, calculating the normal based on the change in inclination.
+Either by deriving the generating functions in advance, or analytically by sampling the generator multiple times with small steps in each direction, calculating the normal based on the change in inclination. As the generator function easily grows to be complex, the latter can become fairly costly in the long run.
 
 
 
