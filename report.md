@@ -1,8 +1,7 @@
-Volumetric Terrain with Dual Contouring
-and Octree Based LOD
+# Volumetric Terrain with Dual Contouring and Octree Based LOD
 
-Fredrik Lind
-2021-03-XX
+Fredrik Lind  
+2021-03-22
 
 # ABSTRACT
 
