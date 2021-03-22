@@ -58,7 +58,7 @@ There are many different algorithms that accomplish this, and the choice might b
 
 ### Blocks
 This is the simplest method of all, with no smoothing or interpolation to talk of.
-If your input data is boolean in nature -- where a voxel is either on or off -- then this is probably your best option.
+If the input data is boolean in nature -- where a voxel is either on or off -- then this is probably the best option.
 The resulting terrain will be jagged and terraced, resembling large stacked blocks.
 As it is very easy to calculate the vertices for any given voxel, since they are cubical in nature, this method is very fast.
 It is possible to run an optimizing algorithm, which will "merge" adjacent blocks together, reducing the polygon count.
@@ -79,7 +79,7 @@ Dual Contouring traditionally uses Hermite data to describe the volume being ren
 Alternatively, it is possible to store the volume as a Signed Distance Field (SDF), and calculate the intersection points and normals analytically.
 An SDF describes, for any given voxel, the distance to the nearest point on the isosurface, as well as the direction (its surface normal).
 The advantage of this is that SDF:s are well-researched and has many interesting properties for volume manipulation, such as easy subtraction and addition.
-"Adding" a shape to another when using SDF:s is for example simply a matter of taking the minimum value of the two fields for any given voxel.
+"Adding" a shape to another when using SDF:s is for example simply a matter of taking the minimum value of the two fields.
 
 Calculating the normals can be done in two ways:
 Either by deriving the generating functions in advance, or analytically by sampling the generator multiple times with small steps in each direction, calculating the normal based on the change in inclination. As the generator function easily grows to be complex, the latter can become fairly costly in the long run.
@@ -97,19 +97,39 @@ The group size is divided into three components: x, y, and z.
 
 When dispatching the shader kernel, a certain number of work groups in each dimension are requested.
 The product of the kernel group size and the requested number of groups will determine how many times the kernel is run.
-The kernel provides an ID, represented as a 3D integer vector, which can be used to associate a kernel invokation with a voxel in the volume.
-
-Flattening this ID will also allow for its use as an index in a GPU buffer, which can be used to pass data between dispatches.
 
 For a volume of 64³ you might, for example, set up a kernel with a group size of (8, 8, 1), 
 	which is then dispatched with a requested group count of (8, 8, 64), 
 	resulting in the kernel being invoked once per voxel in the volume.
 
+The kernel provides an ID, represented as a 3D integer vector, which can be used to associate a kernel invokation with a voxel in the volume.
+Flattening this ID will also allow for its use as an index in a GPU buffer, which can be used to pass data between dispatches.
+
+It is worth keeping in mind that, while a GPU can perform these calculations faster than a CPU by orders of magnitude,
+   a bottleneck will arise when passing data between the two.
+
 ## Level of Detail
 
 When dealing with terrain, it is desireable for the player to be able to see very far into the distance.
-### Chunks
+However, the amount of memory used to store volume data grows quickly as the volume does.
+While an SDF volume of 64³ requires roughly 34 MB of storage, a 128³ volume requires 268 MB -- and doubling the volume size again to 256³ increases the storage requirement to a staggering 2 GB.
+Clearly, and not very surprisingly, it's not feasable to represent the entire terrain as a single large volume.
+Some method of division must therefore be implemented.
 
+### Uniform Chunks
+Voxel terrain is typically divided into logical chunks.
+These are then streamed in and out depending on the position of the player.
+The size of a chunk depends on a few factors.
+A large chunk is more efficient to render, but requires more time to re-mesh when it has been modified.
+Most engines land somewhere between 32 and 64 voxels per chunk.
+
+There is a lot to consider when deciding how to handle loading and unloading of chunks.
+No matter how a chunk is represented in the game engine, creating a new one will require allocating memory, which can be slow and costly.
+Re-using chunks is usually a good idea. It is also important to keep the number of loaded chunks to a minimum for rendering performance.
+
+A simple approach to loading chunks is simply to load a number of uniformly sized chunks around the player
+
+### Octree Based LOD
 
 
 
