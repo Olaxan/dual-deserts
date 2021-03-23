@@ -64,7 +64,7 @@ As it is very easy to calculate the vertices for any given voxel, since they are
 It is possible to run an optimizing algorithm, which will "merge" adjacent blocks together, reducing the polygon count.
 
 ### Marching Cubes
-This algorithm, proposed at the SIGGRAPH '87 conference by XXX and XXX, was originally intented to visualize medical scan data.
+This algorithm, proposed at the SIGGRAPH '87 conference by Lorensen and Cline, was originally intented to visualize medical scan data.
 The method uses a per-voxel density value to determine which voxels are inside the isosurface, comparing it to a specified treshold value.
 It works by identifying a small number of unique triangle configurations, from which (when rotated and mirrored) it is possible to represent any isosurface with fair accuracy.
 Marching Cubes uses large lookup tables to determine triangulation, which makes it very efficient, and well suited for real-time applications.
@@ -136,7 +136,7 @@ This may not sound so bad at first, but a spherical volume with a radius of 32 c
 Skipping chunks that are entirely occluded by neighbouring chunks, or that consists entirely of air would alleviate the problem slightly.
 However, this requires fairly advanced methods, and will not in itself be sufficent to achieve satisfactory performance.
 Reducing the vertex count of faraway chunks would speed up rendering slightly, but require more frequent re-meshing as the LOD level increases.
-It is also unlikely that rendering triangles is by itself the main performance bottleneck.
+It is also unlikely that rendering performance is by itself the main bottleneck.
 
 ### Octree Based LOD
 A better solution -- and a common one at that -- is to increase the size of distant terrain chunks, while retaining the same voxel volume size.
@@ -144,10 +144,42 @@ A chunk 2 km away might, for instance, occupy a space of roughly the same size, 
 This approach will result in significant performance gains, as well as the ability to render essentially endless terrain.
 
 A good data structure for this is the octree; a tree structure where every node contains exactly 8 children.
-Starting with a base size of some value N -- which can be very large -- we recursively divide the cube into parts of 8,
+Starting with a base size of some value N -- which can be very large -- we recursively divide the cube into 8 parts, each N/8 in size,
 	and then dividing those parts again, until we reach a minimum specified value, which could be the size of our voxel field size.
+The division of cells should be based on the distance between their origin, and the LOD observer.
+As the observer moves through the level, nearby cells can split, and cells further away can merge.
+
 As the complexity scales logarithmically, doubling the view distance when using this method only requires 7 additional chunks.
 A disadvantage to this approach is that octrees are fairly memory inefficient, and slow to iterate if required. On the other hand they are very fast to search.
+
+## Texturing Procedural Meshes
+Procedurally generated meshes don't have predefined UV information, meaning any texture applied to them will stretch across its entirety.
+It may be possible to generate UV:s depending on the complexity of the terrain, but a better alternative may be to use triplanar texture mapping.
+This technique uses world-space coordinates to sample the texture, which removes the need for UV:s entirely.
+Applying a single texture on the mesh isn't sufficient -- areas with steep inclination along the axis being sampled will receive a very stretched texture.
+This can be solved by sampling the texture three times, once per axis, and then blending the result together.
+
+## Terrain Modifications
+Most games using volumetric terrain will want to allow the player to somehow modify the terrain, either by digging or placing terrain.
+This can be achieved in different ways depending on the format of the volume data, but when using SDF:s to represent the terrain
+	 a good solution may be Constructive Solid Geometry (CSG) modelling.
+Complex objects can be represented with this method as a series of operations using simple primitive shapes.
+These primitives include any shape that can somehow be expressed as a mathematical function, taking a position as an input and returning the smallest distance from that point to the shape.
+They are sometimes referred to as distance estimators.
+
+There are three main CSG operations to speak of:
+ * The Union operation will combine two primitives.
+ * The Intersection operation will subtract one primitive from another.
+ * The Difference operation will result in a primitive existing only in the intersection between two shapes.
+
+Traditionally, the operations are represented as a tree. In the use-case described here, a list of operations is sufficient.
+A struct describing an operation was implemented. When the user modifies the terrain, a node containing the operation is added to a list.
+This list is sent to the terrain generation algorithm whenever a chunk needs rebuilding. 
+The terrain generator then iterates over the list as part of the generation function, applying operations sequentially.
+Since it is part of the SDF generator function, the operations will be considered when calculating normals later-on.
+This process will have to repeat several times per voxel, and is fairly slow. On the GPU it is fast enough, but will most likely cause delay if attempted on the CPU.
+A caveat of running on the GPU is that the space for operations must be allocated beforehand, resulting in a fixed number of operations per chunk.
+However, since the data is very small when compared to HD textures and meshes, the number of operations can be fairly large.
 
 # RESULTS
 
