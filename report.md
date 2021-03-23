@@ -10,7 +10,7 @@ In the third year of the Bachelor Programme of Computer Engineering, students at
 	are given the chance to select a research paper of their choosing (related to video games or graphics programming), 
 	and attempt to implement the technology.
 
-There is a lot of knowledge to be gained from attempting to create a voxel engine, due to challenges with data storage and optimization
+There is a lot of knowledge to be gained from creating a voxel engine, due to challenges with data storage and optimization
 	-- often requiring the use of interesting algorithms and data structures to solve efficiently.
 For that reason, as well as a long-lived interest in procedural generation,
 	I decided to attempt an implementation of Dual Contouring [REFERENCE]. 
@@ -35,10 +35,10 @@ To some extent you can reproduce these features by masking out holes in the terr
 pre-made geometry to match. This approach requires extra work by both artists and level designers.
 It is also unfeasable to use for procedurally generated terrain.
 
-### Volume Data
 An alternative solution is to use volumetric terrain.
 The terrain surface, in this context, is typically referred to as the "isosurface."
 
+### Volume Data
 In volumetric terrain, the elevation data is replaced by three-dimensional volume data.
 This data can look different depending on the desired look and feel of the terrain.
 For simple, blocky terrain, it is sufficient to store a boolean value for each "voxel" in the terrain,
