@@ -201,5 +201,25 @@ However, since the data is very small when compared to HD textures and meshes, t
 ## RESULTS
 
 ## DISCUSSION
+Overall, I'm quite happy with the result, and I mostly achieved what I set out to achieve.
+The view distance is excellent, and rendering performance is fairly good.
+
+There are a good few limitations, however.
+
+Even on fairly good computers it is common to get stutters when modifying the terrain, 
+	 especially on the seams of chunks, where up to 8 chunks will need to be remeshed instantly.
+
+There are a few graphical quirks that occasionally arise in the distant terrain, such as "spikes" appearing.
+I'm confident that these could be erased fairly easily by dialling back the Dual Contouring parameters with regards to chunk size.
+
+Chunks lack occlusion testing, and as a result will render even if they are completely enclosed in neighbouring terrain chunks, or completely empty.
+If caves were to be added, this would cause such terrible overdraw problems that the game would grind to a halt.
+It is probably not necessary to have an equal vertical draw distance as horizontal (although this would allow for some really interesting caves).
+
+Terrain generation and polygonization happens on the GPU, with structured buffers housing all the volume and triangle data.
+Afterwards, this data is transferred back to the CPU, where it is inserted into Unity's rendering API -- which no doubt returns it to the GPU.
+This back-and-forth is a bottleneck that could probably be adressed, retaining the triangle information on the GPU.
+That said, unless collision is handled on the GPU as well, the CPU will need some knowledge of the data.
+Performing the readback asynchronously could help reduce stutters when re-meshing.
 
 ## REFERENCES
