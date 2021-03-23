@@ -89,7 +89,7 @@ Either by deriving the generating functions in advance, or analytically by sampl
 Graphics processors are actually very well suited for dealing with 3D volumes, as they closely resemble 3D textures.
 A lot of the logic and optimizations that GPU:s provide can therefore be used to speed up both field generation and meshing.
 
-There exists a specialized type of GPU shader called a "Compute Shader," used to perform complex calculation in parallel on the GPU.
+There exists a specialized type of GPU shader called a "Compute Shader," used to perform complex calculations in parallel on the GPU.
 A compute shader may contain one or more kernels, which are essentially program entry points.
 Each kernel can specify how many threads should be assigned to a work group.
 A multiple of 32 makes sense here, 64 being a good default -- as this corresponds well with the size of a warp/wavefront on AMD and NVidia GPU:s.
@@ -118,8 +118,8 @@ Some method of division must therefore be implemented.
 
 ### Uniform Chunks
 Voxel terrain is typically divided into logical chunks.
-These are then streamed in and out depending on the position of the player.
-The size of a chunk depends on a few factors.
+These are then streamed in and out depending on the position of the player, offsetting the generation function with the world position of the chunk.
+The size of a chunk depends on a few factors:
 A large chunk is more efficient to render, but requires more time to re-mesh when it has been modified.
 Most engines land somewhere between 32 and 64 voxels per chunk.
 
@@ -127,11 +127,27 @@ There is a lot to consider when deciding how to handle loading and unloading of 
 No matter how a chunk is represented in the game engine, creating a new one will require allocating memory, which can be slow and costly.
 Re-using chunks is usually a good idea. It is also important to keep the number of loaded chunks to a minimum for rendering performance.
 
-A simple approach to loading chunks is simply to load a number of uniformly sized chunks around the player
+A simple approach to loading chunks is simply to load a number of uniformly sized chunks around the player, based on some view distance value.
+This will result in a roughly spherical volume of chunks being loaded.
+While this method is sufficient to ensure the player can walk around, it might not be suitable for rendering very distant terrain.
+A view distance of 2 km (not uncommon at all in modern games) would require 32 chunks in either direction.
+This may not sound so bad at first, but a spherical volume with a radius of 32 chunks would contain a staggering 137 258 chunks!
+
+Skipping chunks that are entirely occluded by neighbouring chunks, or that consists entirely of air would alleviate the problem slightly.
+However, this requires fairly advanced methods, and will not in itself be sufficent to achieve satisfactory performance.
+Reducing the vertex count of faraway chunks would speed up rendering slightly, but require more frequent re-meshing as the LOD level increases.
+It is also unlikely that rendering triangles is by itself the main performance bottleneck.
 
 ### Octree Based LOD
+A better solution -- and a common one at that -- is to increase the size of distant terrain chunks, while retaining the same voxel volume size.
+A chunk 2 km away might, for instance, occupy a space of roughly the same size, which would replace some 30 000 chunks with a size of 64 units with a single one.
+This approach will result in significant performance gains, as well as the ability to render essentially endless terrain.
 
-
+A good data structure for this is the octree; a tree structure where every node contains exactly 8 children.
+Starting with a base size of some value N -- which can be very large -- we recursively divide the cube into parts of 8,
+	and then dividing those parts again, until we reach a minimum specified value, which could be the size of our voxel field size.
+As the complexity scales logarithmically, doubling the view distance when using this method only requires 7 additional chunks.
+A disadvantage to this approach is that octrees are fairly memory inefficient, and slow to iterate if required. On the other hand they are very fast to search.
 
 # RESULTS
 
