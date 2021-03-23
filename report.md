@@ -10,13 +10,13 @@ In the third year of the Bachelor Programme of Computer Engineering, students at
 	are given the chance to select a research paper of their choosing (related to video games or graphics programming), 
 	and attempt to implement the technology.
 
-There is a lot of knowledge to be gained from attempting to create a voxel engine, due to challenges with data storage and optimization,
-	often requiring the use of interesting algorithms and data structures to solve efficiently.
+There is a lot of knowledge to be gained from attempting to create a voxel engine, due to challenges with data storage and optimization
+	-- often requiring the use of interesting algorithms and data structures to solve efficiently.
 For that reason, as well as a long-lived interest in procedural generation,
 	I decided to attempt an implementation of Dual Contouring [REFERENCE]. 
 This algorithm was selected over similar, simpler methods for two reasons:
 First and foremost, it's well-reknowned and delivers good results.
-Secondly, I wanted to challenge myself with a more complicated algorithm.
+Secondly, I wanted to challenge myself with a more complex algorithm.
 
 The idea was to create a sandbox with volumetric, destructible terrain,
 	set in an infinite (or at least very large), procedurally generated desert environment.
