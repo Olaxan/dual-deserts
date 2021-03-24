@@ -5,6 +5,8 @@ Fredrik Lind
 
 ## ABSTRACT
 
+
+
 ## INTRODUCTION
 In the third year of the Bachelor Programme of Computer Engineering, students at Luleå University of Technology
 	are given the chance to select a research paper of their choosing (related to video games or graphics programming), 
@@ -199,6 +201,13 @@ A caveat of running on the GPU is that the space for operations must be allocate
 However, since the data is very small when compared to HD textures and meshes, the number of operations can be fairly large.
 
 ## RESULTS
+The final result is able to produce terrain that, while not boundless, is large enough to stretch into the horizon.
+The player can dig and place terrain freely, as well as on chunk boundaries, with an (adjustable) limit of 1024 operations per chunk.
+The LOD system is able to accomodate several objects of importance, such that you can "pin" terrain at a certain LOD level. 
+This allows for pre-placed structures to be kept in high LOD at all times, ensuring they are visible in the distance. Their radius can be adjusted per-item.
+At lower LOD levels, chunks are made to overlap slightly, ensuring there are no visible cracks.
+However, there are occasional cracks visible between chunks of high LOD level.
+Terrain with low LOD level can occasionally suffer from artefacts, such as "spikes" appearing.
 
 ## DISCUSSION
 Overall, I'm quite happy with the result, and I mostly achieved what I set out to achieve.
@@ -209,8 +218,7 @@ There are a good few limitations, however.
 Even on fairly good computers it is common to get stutters when modifying the terrain, 
 	 especially on the seams of chunks, where up to 8 chunks will need to be remeshed instantly.
 
-There are a few graphical quirks that occasionally arise in the distant terrain, such as "spikes" appearing.
-I'm confident that these could be erased fairly easily by dialling back the Dual Contouring parameters with regards to chunk size.
+The graphical issues in distant terrain, as well as the cracks between chunks can no doubt be adressed by dialling back the Dual Contouring parameters with regards to chunk size.
 
 Chunks lack occlusion testing, and as a result will render even if they are completely enclosed in neighbouring terrain chunks, or completely empty.
 If caves were to be added, this would cause such terrible overdraw problems that the game would grind to a halt.
