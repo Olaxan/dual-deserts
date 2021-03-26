@@ -1,7 +1,9 @@
 # Volumetric Terrain with Dual Contouring and Octree Based LOD
 
-Fredrik Lind  
-2021-03-22
+**Author:** Fredrik Lind  
+**Date:** 2021-03-22
+**Institution:** Luleå University of Technology
+**Contact:** fredrik.lind.96@gmail.com
 
 ## ABSTRACT
 This paper describes the design process and implementation of a real-time volumetric terrain system, 
@@ -245,5 +247,5 @@ Dual contouring of hermite data. Retrieved 1
 https://dl.acm.org/citation.cfm?id=566586
 * Lorensen, W., & Cline, H. (08 1987). Marching cubes: A
 high resolution 3D surface construction  
-algorithm. Hämtat från ACM Digital Library:  
+algorithm. Retreived from ACM Digital Library:  
 https://dl.acm.org/doi/10.1145/37401.37422
