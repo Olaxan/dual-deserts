@@ -1,9 +1,9 @@
 # Volumetric Terrain with Dual Contouring and Octree Based LOD
 
 **Author:** Fredrik Lind  
-**Date:** 2021-03-22
-**Institution:** Luleå University of Technology
-**Contact:** fredrik.lind.96@gmail.com
+**Date:** 2021-03-22  
+**Institution:** Luleå University of Technology  
+**Contact:** fredrik.lind.96@gmail.com  
 
 ## ABSTRACT
 This paper describes the design process and implementation of a real-time volumetric terrain system, 
