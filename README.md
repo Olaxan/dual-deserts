@@ -24,6 +24,9 @@ A desert is forgiving and can look good even without flora and terrain scatters.
 The Unity engine was chosen due to its excellent
 scripting support and ease-of-use
 
+## Further Reading
+For a detailed report on implementation and design, see [REPORT.md](REPORT.md).
+
 ## Usage
 
 Open the Unity project (see below for details on version and requirements) and enter play mode,
@@ -85,3 +88,18 @@ This script performs volume polygonization on the GPU.
 * `Max Corner Distance` determines when a cutoff, SDF distances over which won't be used to create polygons.
 * `Clamp Range` determines the range inside which vertices will be restricted, to prevent strange artefacts.
 * `Chunks Per Frame` determines how many chunks can be generated every game tick.
+
+## Build Instructions
+
+The project was created in Unity version 2019.4.18f1 using a personal license with the HDRP pipeline.
+
+## External Dependencies 
+
+The project makes use of the following third-party tools and assets:
+
+* First Person All-in-one
+	https://assetstore.unity.com/packages/tools/input-management/first-person-all-in-one-135316
+* UnityOctree
+	https://github.com/Nition/UnityOctree
+* More Effective Coroutines [FREE]
+	https://assetstore.unity.com/packages/tools/animation/more-effective-coroutines-free-54975
