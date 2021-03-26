@@ -14,7 +14,7 @@ I decided to attempt an implementation of Dual Contouring
 (Ju, Losasso, Schaefer, & Warren, 2002).
 
 This algorithm was selected over similar, simpler methods for two reasons: 
-First and foremost, it is wellrenowned and delivers good results. 
+First and foremost, it is well-renowned and delivers good results. 
 Secondly, I wanted to challenge myself with a more complex algorithm.
 
 The idea was to create a sandbox with volumetric, destructible terrain, 
