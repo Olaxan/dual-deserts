@@ -21,17 +21,15 @@ public class OctLoaderTest : MonoBehaviour
 	public float lodOverlap = 1f;
 	public bool lodFade = true;
 	public bool lodDrawBounds = false;
-	
+	public List<TerrainObject> worldObjects;
 
 	[Header("CSG Settings")]
-	public int csgLogicalVolumeSize = 64;
-	public float csgLodRadiusMult = 5f;
+	public float csgLodRadiusMult = 1f;
 
 	[Header("Material Settings")]
 	public Material defaultMaterial;
 
 	TerrainOctree world;
-	public List<TerrainObject> worldObjects;
 
 	Dictionary<Vector3Int, Chunk> loadedChunks;
 	Queue<Chunk> unloadedChunks;
