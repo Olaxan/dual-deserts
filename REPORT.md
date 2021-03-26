@@ -241,11 +241,9 @@ That said, unless collision is handled on the GPU as well, the CPU will need som
 Performing the readback asynchronously could help reduce stutters when re-meshing.
 
 ## REFERENCES
-* Ju, T., Losasso, F., Schaefer, S., & Warren, J. (2002).  
-Dual contouring of hermite data. Retrieved 1
-19, 2021, from ACM Digital Library:  
+* Ju, T., Losasso, F., Schaefer, S., & Warren, J. (2002). Dual contouring of hermite data.  
+Retrieved 1 19, 2021, from ACM Digital Library:  
 https://dl.acm.org/citation.cfm?id=566586
-* Lorensen, W., & Cline, H. (08 1987). Marching cubes: A
-high resolution 3D surface construction  
-algorithm. Retreived from ACM Digital Library:  
+* Lorensen, W., & Cline, H. (08 1987). Marching cubes: A high resolution 3D surface construction algorithm.  
+Retreived from ACM Digital Library:  
 https://dl.acm.org/doi/10.1145/37401.37422
