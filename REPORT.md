@@ -4,7 +4,15 @@ Fredrik Lind
 2021-03-22
 
 ## ABSTRACT
+This paper describes the design process and implementation of a real-time volumetric terrain system, 
+	 capable of generating vast landscapes of procedural terrain. 
 
+The methods used allow for high-frequency terrain with good accuracy and sharp terrain features, 
+	as well as volumetric features such as caves and arches.
+
+Also described is the octree-based Level-of-Detail system, 
+	 allowing for very long draw-distance with agreeable framerates, 
+	 and the Constructive Solid Geometry modelling system which allows the player to modify the terrain freely.
 
 
 ## INTRODUCTION
@@ -231,3 +239,11 @@ That said, unless collision is handled on the GPU as well, the CPU will need som
 Performing the readback asynchronously could help reduce stutters when re-meshing.
 
 ## REFERENCES
+* Ju, T., Losasso, F., Schaefer, S., & Warren, J. (2002).  
+Dual contouring of hermite data. Retrieved 1
+19, 2021, from ACM Digital Library:  
+https://dl.acm.org/citation.cfm?id=566586
+* Lorensen, W., & Cline, H. (08 1987). Marching cubes: A
+high resolution 3D surface construction  
+algorithm. Hämtat från ACM Digital Library:  
+https://dl.acm.org/doi/10.1145/37401.37422
