@@ -1,7 +1,7 @@
 # Dual Deserts
 A desert environment powered by Dual Contouring.
 In the third year of the Bachelor Programme of Computer Engineering, 
-students at Luleå University of Technology are given the chance to select a research paper of their choosing 
+students at LuleÃ¥ University of Technology are given the chance to select a research paper of their choosing 
 (related to video games or graphics programming), 
 and attempt to implement the technology.
 
@@ -97,9 +97,9 @@ The project was created in Unity version 2019.4.18f1 using a personal license wi
 
 The project makes use of the following third-party tools and assets:
 
-* First Person All-in-one
+* First Person All-in-one  
 	https://assetstore.unity.com/packages/tools/input-management/first-person-all-in-one-135316
-* UnityOctree
+* UnityOctree  
 	https://github.com/Nition/UnityOctree
-* More Effective Coroutines [FREE]
+* More Effective Coroutines [FREE]  
 	https://assetstore.unity.com/packages/tools/animation/more-effective-coroutines-free-54975
