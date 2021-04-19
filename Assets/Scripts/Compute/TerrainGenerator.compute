@@ -21,6 +21,9 @@ float surfaceMagnitude;
 float caveScale;
 float caveMagnitude;
 
+bool sphericalPlanet;
+float planetRadius;
+
 float warpScale;
 float warpMagnitude;
 
@@ -68,7 +71,10 @@ float3 snoise3(in float3 v)
 
 float surface(in float3 p)
 {
-	float surf = surfaceLevel - p.y;
+	float plane = surfaceLevel - p.y;
+	float planet = planetRadius - length(p - float3(0, -planetRadius, 0));
+
+	float surf = sphericalPlanet ? planet : plane;
 
 	float3 warp = snoise3(p * warpScale);
 	float3 wp = p + warp * warpMagnitude;
@@ -142,10 +148,6 @@ float density(in float3 p)
 {
 
 	float s = -surface(p);
-
-	float caveMult = 1 - saturate(p.y / 256);
-	float cave = snoise(p * caveScale) * caveMagnitude;
-
 	float res = s;
 
 	float pyramid = sdOctahedronExact(p - float3(-512, 100, 512), 256);

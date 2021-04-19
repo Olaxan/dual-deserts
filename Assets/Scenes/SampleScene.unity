@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.20933604, g: 0.1759026, b: 0.17405581, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1077,12 +1077,11 @@ MonoBehaviour:
   lodOverlap: 4
   lodFade: 1
   lodDrawBounds: 0
-  csgLogicalVolumeSize: 64
-  csgLodRadiusMult: 1
-  defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
   worldObjects:
   - terrainObject: {fileID: 1898698331}
     importance: 1
+  csgLodRadiusMult: 1
+  defaultMaterial: {fileID: 2100000, guid: 95f46520063c3ce4b8d7da548b58a776, type: 2}
 --- !u!4 &2044023712
 Transform:
   m_ObjectHideFlags: 0
@@ -1134,6 +1133,8 @@ MonoBehaviour:
   warpMagnitude: 64
   caveScale: 0.005
   caveMagnitude: 8
+  sphericalPlanet: 1
+  planetRadius: 4096
   noiseOffset: {x: 0, y: 0, z: 0}
   noiseScale: {x: 1, y: 1, z: 1}
   derivativeStep: 0.0001

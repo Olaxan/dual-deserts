@@ -17,6 +17,9 @@ public class CSGenerator : MonoBehaviour
 	public float caveScale;
 	public float caveMagnitude;
 
+	public bool sphericalPlanet = true;
+	public float planetRadius = 8000;
+
 	public Vector3 noiseOffset = Vector3.zero;
 	public Vector3 noiseScale = Vector3.one;
 
@@ -70,6 +73,8 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetMatrix("octaveMat2", rot3);
 		terrainShader.SetMatrix("octaveMat3", rot4);
 
+		terrainShader.SetBool("sphericalPlanet", sphericalPlanet);
+
 		terrainShader.SetFloat("surfaceLevel", surfaceLevel);
 		terrainShader.SetFloat("surfaceScale", surfaceScale);
 		terrainShader.SetFloat("surfaceMagnitude", surfaceMagnitude);
@@ -77,6 +82,7 @@ public class CSGenerator : MonoBehaviour
 		terrainShader.SetFloat("warpMagnitude", warpMagnitude);
 		terrainShader.SetFloat("caveScale", caveScale);
 		terrainShader.SetFloat("caveMagnitude", caveMagnitude);
+		terrainShader.SetFloat("planetRadius", planetRadius);
 		terrainShader.SetFloat("derivativeStep", derivativeStep);
 		terrainShader.SetFloats("noiseOffset", new float[] { noiseOffset.x, noiseOffset.y, noiseOffset.z });
 		terrainShader.SetFloats("noiseScale", new float[] { noiseScale.x, noiseScale.y, noiseScale.z });
